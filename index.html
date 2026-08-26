@@ -1745,27 +1745,7 @@ window.addEventListener('load', function() {
   document.getElementById('cdn-chart').style.color = 'var(--c-success)';
 });
 
-// Override parsePDF to use inline worker via Blob URL
-const _origParsePDF = parsePDF;
-parsePDF = async function(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  showLoading('正在解析 PDF 文件...');
-  if (!pdfjsLib.GlobalWorkerOptions.workerSrc || !pdfjsLib.GlobalWorkerOptions.workerSrc.startsWith('blob:')) {
-    var workerCode = document.getElementById('pdf-worker-code').textContent;
-    var blob = new Blob([workerCode], { type: 'application/javascript' });
-    pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
-  }
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const tc = await page.getTextContent();
-    text += tc.items.map(item => item.str).join(' ') + '\n';
-  }
-  hideLoading();
-  return text;
-};
-
+// Fix CDN status display (all libraries are inlined)
 window.addEventListener('load', function() {
   document.getElementById('cdn-pdf').textContent = '✅ PDF库已内嵌';
   document.getElementById('cdn-pdf').style.color = 'var(--c-success)';
