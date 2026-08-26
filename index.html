@@ -817,18 +817,119 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
     .input-content { margin-top: var(--spacing-sm); }
     .dash-header-left { display: flex; flex-direction: column; }
     .dash-header-right { display: flex; gap: 8px; }
+
+    /* ========== History Report List Styles ========== */
+    .nav-buttons { display: flex; gap: 8px; margin-left: 16px; }
+    .nav-buttons .btn { font-size: 13px; padding: 6px 14px; }
+    .nav-buttons .btn.active-nav { background: var(--c-primary); color: #fff; }
+
+    #reportList { max-width: 1200px; margin: 0 auto; }
+    .report-list-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--spacing-lg);
+    }
+    .report-list-header h2 { font-size: 22px; color: var(--c-text); }
+    .report-list-header .btn-clear-all {
+      background: none; border: 1px solid var(--c-danger); color: var(--c-danger);
+      padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
+      transition: all 0.2s;
+    }
+    .report-list-header .btn-clear-all:hover {
+      background: var(--c-danger); color: #fff;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--spacing-md);
+    }
+
+    .report-card {
+      background: var(--c-card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid var(--c-border-light);
+      position: relative;
+    }
+    .report-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,107,84,0.10);
+    }
+    .report-card-title {
+      font-size: 16px; font-weight: 600; color: var(--c-text);
+      margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      padding-right: 28px;
+    }
+    .report-card-period {
+      font-size: 13px; color: var(--c-text-secondary); margin-bottom: 12px;
+    }
+    .report-card-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    }
+    .report-card-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(0,107,84,0.08); color: var(--c-primary);
+      padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    }
+    .report-card-time {
+      font-size: 12px; color: var(--c-text-light); margin-bottom: 4px;
+    }
+    .report-card-delete {
+      position: absolute; top: 12px; right: 12px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: none; border: none; cursor: pointer;
+      color: var(--c-text-light); font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .report-card-delete:hover {
+      background: rgba(229,57,53,0.1); color: var(--c-danger);
+    }
+
+    .report-list-empty {
+      text-align: center; padding: 60px 20px; color: var(--c-text-light);
+    }
+    .report-list-empty .empty-icon { font-size: 52px; margin-bottom: 16px; }
+    .report-list-empty .empty-text { font-size: 15px; line-height: 1.6; }
+    .report-list-empty .empty-btn {
+      margin-top: 20px; display: inline-block;
+      background: var(--c-primary); color: #fff; border: none;
+      padding: 10px 28px; border-radius: 8px; cursor: pointer;
+      font-size: 14px; font-weight: 500; transition: background 0.2s;
+    }
+    .report-list-empty .empty-btn:hover { background: var(--c-primary-light); }
+
+    .view-hidden { display: none !important; }
   </style>
 </head>
 <body>
   <header class="app-header">
     <h1><span class="icon"></span> 运营周报可视化看板生成器</h1>
     <div class="header-actions">
-      <button class="btn btn-outline" onclick="resetDashboard()">🔄 新建看板</button>
+      <div class="nav-buttons">
+        <button class="btn btn-outline active-nav" id="navBtnList" onclick="switchView('list')">📋 历史周报</button>
+        <button class="btn btn-outline" id="navBtnNew" onclick="switchView('input')">+ 新建周报</button>
+      </div>
     </div>
   </header>
   <div class="main-container">
+    <!-- History Report List -->
+    <div id="reportList" class="view-hidden">
+      <div class="report-list-header">
+        <h2>📋 历史周报</h2>
+        <button class="btn-clear-all" id="btnClearAll" onclick="clearAllHistory()" style="display:none;">🗑️ 清空全部历史</button>
+      </div>
+      <div id="reportGrid" class="report-grid"></div>
+      <div id="reportListEmpty" class="report-list-empty">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">还没有保存的周报<br>去生成第一份吧！</div>
+        <button class="empty-btn" onclick="switchView('input')">+ 新建周报</button>
+      </div>
+    </div>
     <!-- Input Section -->
-    <div class="input-section" id="inputSection">
+    <div class="input-section view-hidden" id="inputSection">
       <h2 class="section-heading">📥 导入周报数据</h2>
       <div class="input-tabs">
         <button class="input-tab active" data-tab="upload">📄 上传文件</button>
@@ -881,13 +982,14 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
       </div>
     </div>
     <!-- Dashboard Section -->
-    <div class="dashboard-area" id="dashboard">
+    <div class="dashboard-area view-hidden" id="dashboard">
       <div class="dash-header">
         <div class="dash-header-left">
           <h2 id="dashTitle">📊 运营周报可视化看板</h2>
           <div class="dash-period" id="dashPeriod"></div>
         </div>
         <div class="dash-header-right">
+          <button class="btn btn-sm btn-outline" onclick="switchView('list')">📋 返回列表</button>
           <button class="btn btn-sm" onclick="window.print()">🖨️ 打印</button>
           <button class="btn btn-sm btn-outline" onclick="exportDashboard()">📤 导出</button>
         </div>
@@ -933,6 +1035,7 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
    ============================================================ */
 let currentData = null;
 let chartInstances = [];
+let _currentSourceType = 'unknown';
 
 /* ============================================================
    Tab Switching
@@ -1662,8 +1765,17 @@ function generateDashboard() {
     currentData.kpis = extractGenericKPIs(text);
   }
 
+  // Track source type
+  const activeTab = document.querySelector('.input-tab.active');
+  currentData.sourceType = activeTab ? activeTab.dataset.tab : 'unknown';
+
   // Render
   renderDashboard(currentData);
+
+  // Auto-save to history
+  try {
+    saveReportToHistory(currentData);
+  } catch(e) { console.warn('保存历史周报失败', e); }
 
   hideLoading();
 }
@@ -1689,9 +1801,13 @@ function extractGenericKPIs(text) {
    Render Dashboard
    ============================================================ */
 function renderDashboard(data) {
-  // Show dashboard
-  document.getElementById('inputSection').style.display = 'none';
-  document.getElementById('dashboard').classList.add('active');
+  // Show dashboard via view system
+  const reportListEl = document.getElementById('reportList');
+  const inputSectionEl = document.getElementById('inputSection');
+  const dashboardEl = document.getElementById('dashboard');
+  if (reportListEl) reportListEl.classList.add('view-hidden');
+  if (inputSectionEl) inputSectionEl.classList.add('view-hidden');
+  if (dashboardEl) dashboardEl.classList.remove('view-hidden');
   document.getElementById('btnExport').disabled = false;
 
   // Title & period
@@ -1988,17 +2104,165 @@ function hideLoading() {
 }
 
 function resetDashboard() {
-  document.getElementById('dashboard').classList.remove('active');
-  document.getElementById('inputSection').style.display = '';
+  const dashboardEl = document.getElementById('dashboard');
+  if (dashboardEl) dashboardEl.classList.add('view-hidden');
   document.getElementById('btnExport').disabled = true;
   chartInstances.forEach(c => c.dispose());
   chartInstances = [];
   currentData = null;
+  switchView('list');
 }
 
 function exportDashboard() {
   // Trigger print
   window.print();
+}
+
+/* ============================================================
+   View Switching & History Management
+   ============================================================ */
+const HISTORY_KEY = 'weekly_report_history';
+
+function switchView(viewName) {
+  const reportListEl = document.getElementById('reportList');
+  const inputSectionEl = document.getElementById('inputSection');
+  const dashboardEl = document.getElementById('dashboard');
+  const navBtnList = document.getElementById('navBtnList');
+  const navBtnNew = document.getElementById('navBtnNew');
+
+  reportListEl.classList.add('view-hidden');
+  inputSectionEl.classList.add('view-hidden');
+  dashboardEl.classList.add('view-hidden');
+
+  if (navBtnList) navBtnList.classList.remove('active-nav');
+  if (navBtnNew) navBtnNew.classList.remove('active-nav');
+
+  if (viewName === 'list') {
+    reportListEl.classList.remove('view-hidden');
+    if (navBtnList) navBtnList.classList.add('active-nav');
+    renderReportList();
+  } else if (viewName === 'input') {
+    inputSectionEl.classList.remove('view-hidden');
+    if (navBtnNew) navBtnNew.classList.add('active-nav');
+  } else if (viewName === 'dashboard') {
+    dashboardEl.classList.remove('view-hidden');
+  }
+}
+
+function saveReportToHistory(data) {
+  let history = loadReportHistory();
+  const chartCount = data.series ? Object.keys(data.series).length : 0;
+  const record = {
+    id: Date.now(),
+    title: data.title || '未命名周报',
+    period: data.period || '',
+    createdAt: new Date().toLocaleString('zh-CN'),
+    kpiCount: data.kpis ? data.kpis.length : 0,
+    chartCount: chartCount,
+    sourceType: data.sourceType || 'unknown',
+    data: data
+  };
+  history.unshift(record);
+
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {
+    // Storage full, remove oldest entries and retry
+    while (history.length > 1) {
+      history.pop();
+      try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        alert('存储空间已满，已自动清理最旧的记录');
+        return;
+      } catch (e2) { continue; }
+    }
+    alert('存储空间不足，无法保存历史周报');
+  }
+}
+
+function loadReportHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch (e) {
+    return [];
+  }
+}
+
+function deleteReport(id) {
+  if (!confirm('确定要删除这条周报记录吗？')) return;
+  let history = loadReportHistory();
+  history = history.filter(r => r.id !== id);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  renderReportList();
+}
+
+function clearAllHistory() {
+  if (!confirm('确定要清空所有历史周报记录吗？此操作不可恢复！')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderReportList();
+}
+
+function renderReportList() {
+  const history = loadReportHistory();
+  const grid = document.getElementById('reportGrid');
+  const emptyEl = document.getElementById('reportListEmpty');
+  const clearBtn = document.getElementById('btnClearAll');
+
+  grid.innerHTML = '';
+
+  if (history.length === 0) {
+    grid.style.display = 'none';
+    emptyEl.style.display = '';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  grid.style.display = '';
+  emptyEl.style.display = 'none';
+  clearBtn.style.display = '';
+
+  history.forEach(record => {
+    const card = document.createElement('div');
+    card.className = 'report-card';
+    card.onclick = function(e) {
+      if (e.target.closest('.report-card-delete')) return;
+      viewReport(record.id);
+    };
+
+    const sourceLabel = {
+      'upload': '📄 文件上传',
+      'paste': '📝 粘贴文本',
+      'link': '🔗 在线链接',
+      'demo': '🎯 示例数据'
+    }[record.sourceType] || '📄 周报';
+
+    card.innerHTML = `
+      <button class="report-card-delete" onclick="deleteReport(${record.id})" title="删除">✕</button>
+      <div class="report-card-title">${escapeHtml(record.title)}</div>
+      <div class="report-card-period">${escapeHtml(record.period || '')}</div>
+      <div class="report-card-meta">
+        <span class="report-card-tag">📊 ${record.kpiCount} 个指标</span>
+        <span class="report-card-tag">📈 ${record.chartCount} 个图表</span>
+        <span class="report-card-tag">${sourceLabel}</span>
+      </div>
+      <div class="report-card-time">🕐 ${escapeHtml(record.createdAt)}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function viewReport(id) {
+  const history = loadReportHistory();
+  const record = history.find(r => r.id === id);
+  if (!record) {
+    alert('未找到该周报记录');
+    return;
+  }
+  currentData = record.data;
+  renderDashboard(currentData);
+  switchView('dashboard');
 }
 
 function exportHTML() {
@@ -2093,6 +2357,9 @@ window.addEventListener('load', function() {
   document.getElementById('cdn-word').style.color = 'var(--c-success)';
   document.getElementById('cdn-chart').textContent = '✅ 图表库已内嵌';
   document.getElementById('cdn-chart').style.color = 'var(--c-success)';
+
+  // Initialize view: show report list by default
+  switchView('list');
 });
 </script>
 </body>
