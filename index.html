@@ -1082,29 +1082,44 @@ function extractData(text, template) {
     title: '运营周报看板',
     period: '',
     kpis: [],
-    series: {},      // { name: { labels: [], values: [] } }
-    tables: [],      // [{ title, headers, rows }]
-    points: [],      // [{ title, items: [] }]
+    series: {},
+    tables: [],
+    points: [],
     rawText: text
   };
 
+  // Normalize text: collapse spaces between Chinese chars for matching, but keep original
+  const normText = text.replace(/([一-鿿])\s+([一-鿿])/g, '$1$2');
+
   // Detect period
-  const periodMatch = text.match(/第?\s*(\d{1,2})\s*[期周]/g) ||
-                      text.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]/g) ||
-                      text.match(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})\s*[~至到\-—]+\s*(\d{4}[./-])?(\d{1,2})[./-](\d{1,2})/g) ||
-                      text.match(/(\d{1,2}月\d{1,2}日)\s*[~至到\-—]+\s*(\d{1,2}月\d{1,2}日)/g);
+  const periodMatch = normText.match(/第?\s*(\d{1,2})\s*[期周]/) ||
+                      normText.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]/) ||
+                      normText.match(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})\s*[~至到\-—]+\s*(\d{4}[./-])?(\d{1,2})[./-](\d{1,2})/) ||
+                      normText.match(/(\d{1,2}月\d{1,2}日)\s*[~至到\-—]+\s*(\d{1,2}月\d{1,2}日)/);
   if (periodMatch) data.period = periodMatch[0].trim();
 
   // Detect title
-  const titleMatch = text.match(/(.{2,30}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/);
+  const titleMatch = normText.match(/(.{2,30}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/);
   if (titleMatch) data.title = titleMatch[1].trim();
 
-  // Choose extraction patterns based on template
-  const patterns = getPatterns(template, text);
+  // === Parse pipe-delimited markdown tables ===
+  const allTables = parsePipeTables(normText);
 
-  // Extract KPIs
+  // === Extract KPIs ===
+  const patterns = getPatterns(template, normText, allTables);
+
+  // Extract KPIs from patterns
   patterns.kpis.forEach(p => {
-    const matches = text.matchAll(p.regex);
+    if (p.fromTable) {
+      // KPI from table data
+      const tableData = extractFromTable(allTables, p.fromTable);
+      if (tableData) {
+        data.kpis.push({ name: p.name, value: tableData.value, unit: p.unit || '%', trend: tableData.trend || null });
+      }
+      return;
+    }
+    const regex = new RegExp(p.regex.source, p.regex.flags);
+    const matches = normText.matchAll(regex);
     for (const m of matches) {
       const name = p.nameFn ? p.nameFn(m) : p.name;
       let value = p.valueFn ? p.valueFn(m) : parseFloat(m[1]);
@@ -1112,10 +1127,11 @@ function extractData(text, template) {
       const unit = p.unit || '';
       // Find trend
       let trend = null;
-      const trendIdx = text.indexOf(m[0]);
-      const contextWindow = text.substring(Math.max(0, trendIdx - 80), trendIdx + m[0].length + 80);
-      const trendMatch = contextWindow.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨)?\s*([\d.]+)\s*%/) ||
-                         contextWindow.match(/([\d.]+)\s*%\s*(?:的)?环[比节]/);
+      const trendIdx = normText.indexOf(m[0]);
+      const contextWindow = normText.substring(Math.max(0, trendIdx - 120), trendIdx + m[0].length + 120);
+      // Match "环比下降 X.XX 个百分点" or "环比上升 X.XX%" etc.
+      const trendMatch = contextWindow.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
+                         contextWindow.match(/([\d.]+)\s*(?:个百分点|%)\s*(?:的)?环[比节]/);
       if (trendMatch) {
         const tv = parseFloat(trendMatch[1]);
         const isUp = /上升|增长|提高|增加|上涨/.test(contextWindow);
@@ -1125,7 +1141,7 @@ function extractData(text, template) {
     }
   });
 
-  // Deduplicate KPIs (keep first occurrence of each name)
+  // Deduplicate KPIs
   const seen = new Set();
   data.kpis = data.kpis.filter(k => {
     if (seen.has(k.name)) return false;
@@ -1135,7 +1151,7 @@ function extractData(text, template) {
 
   // Extract series data for charts
   patterns.series.forEach(s => {
-    const match = text.match(s.regex);
+    const match = normText.match(s.regex);
     if (match) {
       data.series[s.name] = {
         labels: s.labelsFn ? s.labelsFn(match) : [],
@@ -1144,21 +1160,34 @@ function extractData(text, template) {
     }
   });
 
-  // Extract tables from text (table-like structures)
+  // Extract tables
   patterns.tables.forEach(t => {
-    const match = text.match(t.regex);
-    if (match) {
-      data.tables.push({
-        title: t.name,
-        headers: t.headersFn ? t.headersFn(match) : [],
-        rows: t.rowsFn ? t.rowsFn(match) : []
-      });
+    if (t.fromParsed) {
+      // Use pre-parsed pipe tables
+      const idx = t.tableIndex || 0;
+      if (allTables[idx]) {
+        const tbl = allTables[idx];
+        data.tables.push({
+          title: t.name,
+          headers: tbl.headers,
+          rows: tbl.rows
+        });
+      }
+    } else {
+      const match = normText.match(t.regex);
+      if (match) {
+        data.tables.push({
+          title: t.name,
+          headers: t.headersFn ? t.headersFn(match) : [],
+          rows: t.rowsFn ? t.rowsFn(match) : []
+        });
+      }
     }
   });
 
   // Extract key points
   patterns.points.forEach(p => {
-    const match = text.match(p.regex);
+    const match = normText.match(p.regex);
     if (match) {
       data.points.push({
         title: p.name,
@@ -1170,41 +1199,352 @@ function extractData(text, template) {
   return data;
 }
 
-function getPatterns(template, text) {
-  // Common patterns shared across templates
+// Parse all pipe-delimited markdown tables from text
+function parsePipeTables(text) {
+  const tables = [];
+  const lines = text.split(/\n/);
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    // Detect table header row: starts with | and contains |
+    if (line.startsWith('|') && line.includes('|', 1)) {
+      const headerCells = parsePipeRow(line);
+      // Check if next line is separator (|---|---|)
+      if (i + 1 < lines.length && /^\|[\s\-:|]+\|$/.test(lines[i + 1].trim())) {
+        const headers = headerCells;
+        const rows = [];
+        i += 2; // skip header and separator
+        while (i < lines.length) {
+          const rowLine = lines[i].trim();
+          if (!rowLine.startsWith('|')) break;
+          rows.push(parsePipeRow(rowLine));
+          i++;
+        }
+        tables.push({ headers, rows, startLine: i - rows.length - 2 });
+        continue;
+      }
+    }
+    i++;
+  }
+  return tables;
+}
+
+// Parse a single pipe row into cells
+function parsePipeRow(line) {
+  return line.split('|')
+    .map(c => c.trim().replace(/\s+/g, ''))
+    .filter((c, i, arr) => !(i === 0 && c === '') && !(i === arr.length - 1 && c === ''));
+}
+
+// Extract value from table by matching column header patterns
+function extractFromTable(tables, spec) {
+  for (const tbl of tables) {
+    // Find the column index for the value
+    let colIdx = -1;
+    for (let ci = 0; ci < tbl.headers.length; ci++) {
+      if (new RegExp(spec.valueCol).test(tbl.headers[ci])) {
+        colIdx = ci;
+        break;
+      }
+    }
+    if (colIdx < 0) continue;
+
+    // Find the row matching spec.rowMatch
+    for (const row of tbl.rows) {
+      const rowText = row.join('');
+      if (new RegExp(spec.rowMatch).test(rowText)) {
+        // Find trend column
+        let trend = null;
+        let trendColIdx = -1;
+        for (let ci = 0; ci < tbl.headers.length; ci++) {
+          if (/(?:同比|环比)/.test(tbl.headers[ci]) && ci !== colIdx) {
+            trendColIdx = ci;
+            // Prefer 环比 if exists
+            if (/环比/.test(tbl.headers[ci])) break;
+          }
+        }
+        if (trendColIdx >= 0 && trendColIdx < row.length) {
+          const trendText = row[trendColIdx];
+          const trendNum = trendText.match(/([\d.]+)/);
+          if (trendNum) {
+            const isDown = /下降|降低|减少|-/.test(trendText);
+            trend = { value: parseFloat(trendNum[1]), direction: isDown ? 'down' : 'up' };
+          }
+        }
+        if (colIdx < row.length) {
+          const valText = row[colIdx];
+          const valMatch = valText.match(/([\d,.]+)/);
+          if (valMatch) {
+            return { value: parseFloat(valMatch[1].replace(/[，,]/g, '')), trend };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function getPatterns(template, text, allTables) {
   const common = {
-    kpis: [
-      // General percentage metrics
-      { regex: /([\w]{2,10}(?:率|比例|占比|达标率|完成率|合格率|满意度))\s*[为：:达到]?\s*([\d.]+)\s*%/g, nameFn: m => m[1], valueFn: m => parseFloat(m[2]), unit: '%' },
-      // Call/contact volume
-      { regex: /([\w]{2,10}(?:量|数|次数|件数|通数))\s*[为：:达到共]?\s*([\d,，]+(?:\.\d+)?)\s*(通|件|次|个|条|宗)/g, nameFn: m => m[1], valueFn: m => parseFloat(m[2].replace(/[，,]/g, '')), unitFn: m => m[3], unit: '' },
-      // Time metrics
-      { regex: /([\w]{2,10}(?:时长|时间|耗时|处理时间))\s*[为：:达到]?\s*([\d.]+)\s*(分钟|秒|小时|分|s|h)/gi, nameFn: m => m[1], valueFn: m => parseFloat(m[2]), unit: m => m[3] || '' },
-    ],
+    kpis: [],
     series: [],
     tables: [],
-    points: [
-      { name: '存在问题', regex: /(?:存在[的]?问题|主要问题|问题[与及])[\s\S]{0,500}?(?=(?:下[一周步]|改进|计划|建议|$))/, itemsFn: m => extractListItems(m[0]) },
-      { name: '下步计划', regex: /(?:下[一周步]计划|下[一周步]工作|后续计划|改进措施|工作计划)[\s\S]{0,500}?$/m, itemsFn: m => extractListItems(m[0]) }
-    ]
+    points: []
   };
 
-  // Template-specific patterns
+  // Helper: create a space-tolerant Chinese regex pattern
+  // e.g. "业务量占比" -> "业\s*务\s*量\s*占\s*比"
+  function sp(s) { return s.split('').join('\\s*'); }
+
   if (template === '95598' || template === 'auto') {
-    common.kpis.push(
-      { regex: /呼入量\s*[为：:达到共]?\s*([\d,，]+(?:\.\d+)?)\s*(通|次|万通)?/g, name: '呼入量', valueFn: m => parseFloat(m[1].replace(/[，,]/g, '')), unit: m => m[2] || '通' },
-      { regex: /工单[总]?量\s*[为：:达到共]?\s*([\d,，]+(?:\.\d+)?)\s*(件|通|次)?/g, name: '工单总量', valueFn: m => parseFloat(m[1].replace(/[，,]/g, '')), unit: '件' },
-      { regex: /投诉[工单数类量]*\s*([\d,，]+)\s*(件|通|次)?/g, name: '投诉工单', valueFn: m => parseFloat(m[1].replace(/[，,]/g, '')), unit: '件' },
-    );
-    common.series.push(
-      { name: '工单类型分布', regex: /(?:故障报修[\s\S]*?咨询[\s\S]*?投诉[\s\S]*?意见[\s\S]*?建议)/, labelsFn: () => ['故障报修','咨询','投诉','意见','建议','举报','表扬'], valuesFn: m => extractNumbers(m[0], 7) },
-    );
+    // ====== KPIs ======
+    // 1. 全渠道业务量占比
+    common.kpis.push({
+      name: '全渠道业务量占比', unit: '%',
+      regex: new RegExp(sp('全渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 2. 电话渠道业务量占比
+    common.kpis.push({
+      name: '电话渠道业务量占比', unit: '%',
+      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 3. 电话渠道流程完成率
+    common.kpis.push({
+      name: '电话渠道流程完成率', unit: '%',
+      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 4. 互联网渠道业务量占比
+    common.kpis.push({
+      name: '互联网渠道业务量占比', unit: '%',
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 5. 互联网渠道流程完成率
+    common.kpis.push({
+      name: '互联网渠道流程完成率', unit: '%',
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 6. 电话渠道服务量
+    common.kpis.push({
+      name: '电话渠道服务量', unit: '万件',
+      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '\\s*' + '(?:' + sp('服务') + '|' + sp('业务') + ')' + '\\s*(?:' + sp('量') + ')?\\s*([\\d.]+)\\s*万\\s*件'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 7. 互联网渠道服务量
+    common.kpis.push({
+      name: '互联网渠道服务量', unit: '万件',
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '\\s*' + '(?:' + sp('服务') + '|' + sp('业务') + ')' + '\\s*(?:' + sp('量') + ')?\\s*([\\d.]+)\\s*万\\s*件'),
+      valueFn: m => parseFloat(m[1])
+    });
+    // 8. 需求总数
+    common.kpis.push({
+      name: '需求总数', unit: '个',
+      regex: new RegExp(sp('需求') + '(?:' + sp('总数') + '|' + sp('数量') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 9. 缺陷总数
+    common.kpis.push({
+      name: '缺陷总数', unit: '个',
+      regex: new RegExp(sp('缺陷') + '(?:' + sp('总数') + '|' + sp('总数') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 10. 校核数据条数
+    common.kpis.push({
+      name: '校核数据条数', unit: '条',
+      regex: new RegExp(sp('校核') + '(?:' + sp('数据') + ')?\\s*(?:' + sp('条数') + '|' + sp('数量') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)\\s*(?:条|万条)?'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 11. 发现问题数
+    common.kpis.push({
+      name: '发现问题数', unit: '个',
+      regex: new RegExp(sp('发现') + sp('问题') + '(?:' + sp('数') + '|' + sp('数量') + ')?\\s*([\\d]+)'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 12. 标注样本量
+    common.kpis.push({
+      name: '标注样本量', unit: '条',
+      regex: new RegExp(sp('标注') + '\\s*' + sp('样本') + '(?:' + sp('量') + ')?\\s*([\\d]+)'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 13. 知识维护条数
+    common.kpis.push({
+      name: '知识维护条数', unit: '条',
+      regex: new RegExp(sp('知识') + '(?:' + sp('维护') + ')?\\s*(?:' + sp('条数') + '|' + sp('数量') + ')?\\s*([\\d]+)\\s*(?:条)?'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 14. 服务风险
+    common.kpis.push({
+      name: '服务风险', unit: '个',
+      regex: new RegExp(sp('服务') + sp('风险') + '\\s*([\\d]+)'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 15. 项目进度 - 运营优化
+    common.kpis.push({
+      name: '运营优化进度', unit: '%',
+      regex: new RegExp(sp('运营') + sp('优化') + '[\\s\\S]{0,50}?' + '([\\d]+)\\s*%'),
+      valueFn: m => parseInt(m[1])
+    });
+    // 16. 项目进度 - 语料管理
+    common.kpis.push({
+      name: '语料管理进度', unit: '%',
+      regex: new RegExp(sp('语料') + sp('管理') + '[\\s\\S]{0,50}?' + '([\\d]+)\\s*%'),
+      valueFn: m => parseInt(m[1])
+    });
+
+    // Also try to get KPIs from tables if text patterns didn't match
+    // 全渠道重点指标 table
+    common.kpis.push({
+      fromTable: { rowMatch: '全渠道|业务量占比', valueCol: '本期|本期值', },
+      name: '全渠道业务量占比', unit: '%',
+    });
+    common.kpis.push({
+      fromTable: { rowMatch: '电话.*业务量占比|电话渠道.*占比', valueCol: '本期|本期值' },
+      name: '电话渠道业务量占比', unit: '%',
+    });
+    common.kpis.push({
+      fromTable: { rowMatch: '互联网.*业务量占比|互联网渠道.*占比', valueCol: '本期|本期值' },
+      name: '互联网渠道业务量占比', unit: '%',
+    });
+
+    // ====== Series ======
+    // 互联网各渠道业务量占比
+    common.series.push({
+      name: '互联网各渠道业务量占比',
+      regex: new RegExp(sp('网上国网') + '[\\s\\S]{0,200}?' + sp('微信小程序') + '[\\s\\S]{0,200}?' + sp('互动网站')),
+      labelsFn: () => ['网上国网', '微信小程序', '95598互动网站'],
+      valuesFn: m => {
+        const vals = [];
+        const nums = m[0].match(/([\d.]+)\s*%/g);
+        if (nums) nums.forEach(n => vals.push(parseFloat(n)));
+        return vals.slice(0, 3);
+      }
+    });
+
+    // 需求状态分布
+    common.series.push({
+      name: '需求状态分布',
+      regex: new RegExp(sp('已上线') + '[\\s\\S]{0,300}?' + sp('待开展')),
+      labelsFn: () => ['已上线', '需求文档编制中', '技术评估中', '研发中', '待开展'],
+      valuesFn: m => {
+        const labels = ['已上线', '需求文档编制中', '技术评估中', '研发中', '待开展'];
+        const vals = [];
+        labels.forEach(l => {
+          const re = new RegExp(sp(l).replace(/\\s\*/g, '\\s*') + '\\s*([\\d]+)');
+          const match = m[0].match(re);
+          if (match) vals.push(parseInt(match[1]));
+          else vals.push(0);
+        });
+        return vals;
+      }
+    });
+
+    // 缺陷状态分布
+    common.series.push({
+      name: '缺陷状态分布',
+      regex: new RegExp(sp('未解决') + '[\\s\\S]{0,200}?' + sp('已解决')),
+      labelsFn: () => ['未解决', '已解决', '转成需求'],
+      valuesFn: m => {
+        const labels = ['未解决', '已解决', '转成需求'];
+        const vals = [];
+        labels.forEach(l => {
+          const re = new RegExp(sp(l) + '\\s*([\\d]+)');
+          const match = m[0].match(re);
+          if (match) vals.push(parseInt(match[1]));
+          else vals.push(0);
+        });
+        return vals;
+      }
+    });
+
+    // 知识数据维护
+    common.series.push({
+      name: '知识数据维护',
+      regex: new RegExp('(?:' + sp('新增') + '|' + sp('更新') + '|' + sp('删除') + ')[\\s\\S]{0,200}?(?:' + sp('新增') + '|' + sp('更新') + '|' + sp('删除') + ')'),
+      labelsFn: () => ['新增', '更新', '删除'],
+      valuesFn: m => {
+        const vals = [];
+        const labels = ['新增', '更新', '删除'];
+        labels.forEach(l => {
+          const re = new RegExp(sp(l) + '\\s*([\\d]+)');
+          const match = m[0].match(re);
+          if (match) vals.push(parseInt(match[1]));
+          else vals.push(0);
+        });
+        return vals;
+      }
+    });
+
+    // 标签应用触发量
+    common.series.push({
+      name: '标签应用触发量',
+      regex: new RegExp(sp('短信') + '[\\s\\S]{0,300}?' + sp('偏好') + '|' + sp('标签') + '[\\s\\S]{0,500}'),
+      labelsFn: () => ['短信接收电费', '查询多月电费', '查询多户电费', '智能关爱服务', '偏好地址查询'],
+      valuesFn: m => {
+        const labels = ['短信接收电费', '查询多月电费', '查询多户电费', '智能关爱服务', '偏好地址查询'];
+        const vals = [];
+        labels.forEach(l => {
+          const re = new RegExp(sp(l) + '\\s*([\\d]+)');
+          const match = m[0].match(re);
+          if (match) vals.push(parseInt(match[1]));
+          else vals.push(0);
+        });
+        return vals;
+      }
+    });
+
+    // ====== Tables ======
+    // Map parsed pipe tables to named tables
+    if (allTables.length > 0) {
+      common.tables.push({ name: '全渠道重点指标完成情况', fromParsed: true, tableIndex: 0 });
+    }
+    if (allTables.length > 1) {
+      common.tables.push({ name: '需求及检修情况统计', fromParsed: true, tableIndex: 1 });
+    }
+    if (allTables.length > 2) {
+      common.tables.push({ name: '缺陷情况统计', fromParsed: true, tableIndex: 2 });
+    }
+    if (allTables.length > 3) {
+      common.tables.push({ name: '校核及标注统计', fromParsed: true, tableIndex: 3 });
+    }
+    if (allTables.length > 4) {
+      common.tables.push({ name: '项目进展', fromParsed: true, tableIndex: 4 });
+    }
+
+    // ====== Points ======
+    common.points.push({
+      name: '上周完成工作',
+      regex: new RegExp('(?:' + sp('上周') + '|' + sp('上期') + ')(?:' + sp('完成') + ')?\\s*(?:' + sp('工作') + ')?[\\s\\S]{0,2000}?(?=' + sp('本周') + '|' + sp('下周') + '|$)'),
+      itemsFn: m => extractListItems(m[0])
+    });
+    common.points.push({
+      name: '本周工作计划',
+      regex: new RegExp('(?:' + sp('本周') + '|' + sp('下期') + ')(?:' + sp('工作') + ')?\\s*(?:' + sp('计划') + ')?[\\s\\S]{0,2000}?(?=$)'),
+      itemsFn: m => extractListItems(m[0])
+    });
   }
 
-  if (template === 'project' || template === 'auto') {
-    common.kpis.push(
-      { regex: /完成[率进度]*\s*[为：:达到]?\s*([\d.]+)\s*%/g, name: '完成率', valueFn: m => parseFloat(m[1]), unit: '%' },
-      { regex: /(?:已[完成交付]|上线|部署)\s*([\d]+)\s*(?:个|项|批次)/g, name: '已完成项', valueFn: m => parseFloat(m[1]), unit: '项' },
+  // Fallback general patterns
+  if (common.kpis.length === 0 || template === 'auto') {
+    // General percentage metrics with space tolerance
+    common.kpis.push({
+      regex: /([一-鿿\s]{2,15}(?:率|比例|占比|达标率|完成率|合格率|满意度))\s*[为：:达到]?\s*([\d.]+)\s*%/g,
+      nameFn: m => m[1].trim(), valueFn: m => parseFloat(m[2]), unit: '%'
+    });
+    // General volume metrics
+    common.kpis.push({
+      regex: /([一-鿿\s]{2,15}(?:量|数|次数|件数|通数|条数))\s*[为：:达到共]?\s*([\d,.]+(?:\.\d+)?)\s*(通|件|次|个|条|宗|万)/g,
+      nameFn: m => m[1].trim(), valueFn: m => parseFloat(m[2].replace(/[，,]/g, '')), unit: ''
+    });
+  }
+
+  if (common.points.length === 0) {
+    common.points.push(
+      { name: '存在问题', regex: /(?:存在[的]?问题|主要问题|问题[与及])[\s\S]{0,500}?(?=(?:下[一周步]|改进|计划|建议|$))/, itemsFn: m => extractListItems(m[0]) },
+      { name: '下步计划', regex: /(?:下[一周步]计划|下[一周步]工作|后续计划|改进措施|工作计划)[\s\S]{0,500}?$/m, itemsFn: m => extractListItems(m[0]) }
     );
   }
 
