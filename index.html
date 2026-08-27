@@ -1527,6 +1527,9 @@ function extractFromTable(tables, spec) {
 }
 
 function getPatterns(template, text, allTables) {
+  // Normalize text: collapse spaces between Chinese chars for matching
+  const normText = text.replace(/([一-鿿])\s+([一-鿿])/g, '$1$2');
+
   const common = {
     kpis: [],
     series: [],
