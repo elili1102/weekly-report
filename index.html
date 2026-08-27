@@ -1007,7 +1007,7 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
     <div class="spinner"></div>
     <p class="loading-text" id="loadingText">处理中...</p>
   </div>
-  <script type="application/javascript" id="pdf-worker-code">/**
+  <script type="text/plain" id="pdf-worker-code">/**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
  *
@@ -2356,8 +2356,8 @@ window.addEventListener('resize', () => {
 });
 
 // Fix parsePDF to use inline worker
-const _origParsePDF = parsePDF;
-parsePDF = async function(file) {
+const _origParsePDF = typeof parsePDF !== "undefined" ? parsePDF : null;
+if (_origParsePDF) { parsePDF = async function(file) {
   const arrayBuffer = await file.arrayBuffer();
   showLoading('正在解析 PDF 文件...');
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc || !pdfjsLib.GlobalWorkerOptions.workerSrc.startsWith('blob:')) {
@@ -2374,7 +2374,7 @@ parsePDF = async function(file) {
   }
   hideLoading();
   return text;
-};
+}; }
 
 // Remove CDN check since all libraries are inlined
 window.addEventListener('load', function() {
@@ -2397,7 +2397,7 @@ window.addEventListener('load', function() {
   document.getElementById('cdn-chart').style.color = 'var(--c-success)';
 
   // Initialize view: show report list by default
-  switchView('list');
+  try { switchView('list'); } catch(e) { console.error('[Init] switchView failed:', e); document.getElementById('reportList')?.classList.remove('view-hidden'); }
 });
 </script>
 </body>
