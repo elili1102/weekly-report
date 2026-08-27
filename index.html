@@ -1207,6 +1207,7 @@ function extractData(text, template) {
 
   // === Parse pipe-delimited markdown tables ===
   const allTables = parsePipeTables(normText);
+  const pdfTables = parsePdfTables(normText);
 
   // === Extract KPIs ===
   const patterns = getPatterns(template, normText, allTables);
@@ -1246,9 +1247,10 @@ function extractData(text, template) {
     }
   });
 
-  // Deduplicate KPIs
+  // Deduplicate KPIs (prefer _isManual items over regex-matched ones)
   const seen = new Set();
   data.kpis = data.kpis.filter(k => {
+    if (k._isManual) { delete k._isManual; seen.add(k.name); return true; }
     if (seen.has(k.name)) return false;
     seen.add(k.name);
     return true;
@@ -1342,6 +1344,57 @@ function parsePipeRow(line) {
 }
 
 // Extract value from table by matching column header patterns
+// Parse PDF-extracted text tables (space/tab separated, NOT pipe-delimited)
+function parsePdfTables(text) {
+  const tables = [];
+  const lines = text.split(/\n/).map(l => l.trim()).filter(l => l);
+  
+  // Known table headers in this PDF
+  const tableMarkers = [
+    { name: '全渠道重点指标', headerKeywords: ['服务', '渠道', '考核指标', '本期'] },
+    { name: '互联网各渠道指标', headerKeywords: ['序号', '服务渠道', '考核指标名称'] },
+    { name: '需求及检修情况', headerKeywords: ['分类', '合计'] },
+    { name: '需求状态统计', headerKeywords: ['需求状态', '已上线', '研发中'] },
+    { name: '缺陷情况统计', headerKeywords: ['缺陷状态', '未解决', '已解决'] },
+    { name: '校核及标注统计', headerKeywords: ['统计维度', '校核数据条数', '发现问题数'] },
+    { name: '问题维护情况', headerKeywords: ['分中心', '维护问题数'] },
+    { name: '检修情况', headerKeywords: ['发版时间', '发版主题'] },
+  ];
+  
+  // For each known table, try to find it and extract rows
+  tableMarkers.forEach(marker => {
+    // Find a line that contains most of the header keywords
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      let matchCount = 0;
+      marker.headerKeywords.forEach(kw => { if (line.includes(kw)) matchCount++; });
+      
+      if (matchCount >= Math.ceil(marker.headerKeywords.length * 0.6)) {
+        // Found table header area, extract rows until empty line or next table
+        const rows = [];
+        for (let j = i + 1; j < Math.min(lines.length, i + 30); j++) {
+          const rowLine = lines[j].trim();
+          if (!rowLine) break;
+          // Skip separator lines (like --- or ===)
+          if (/^[-=]+$/.test(rowLine)) continue;
+          // Split by multiple spaces (table columns)
+          const cells = rowLine.split(/\s{2,}/).map(c => c.trim()).filter(c => c);
+          if (cells.length >= 2) {
+            rows.push(cells);
+          }
+        }
+        if (rows.length > 0) {
+          tables.push({ name: marker.name, headers: marker.headerKeywords, rows, startLine: i });
+        }
+        break;
+      }
+    }
+  });
+  
+  return tables;
+}
+
+
 function extractFromTable(tables, spec) {
   for (const tbl of tables) {
     // Find the column index for the value
@@ -1445,30 +1498,53 @@ function getPatterns(template, text, allTables) {
       regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '\\s*' + '(?:' + sp('服务') + '|' + sp('业务') + ')' + '\\s*(?:' + sp('量') + ')?\\s*([\\d.]+)\\s*万\\s*件'),
       valueFn: m => parseFloat(m[1])
     });
-    // 8. 需求总数
-    common.kpis.push({
-      name: '需求总数', unit: '个',
-      regex: new RegExp(sp('需求') + '(?:' + sp('总数') + '|' + sp('数量') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)'),
-      valueFn: m => parseInt(m[1])
-    });
-    // 9. 缺陷总数
-    common.kpis.push({
-      name: '缺陷总数', unit: '个',
-      regex: new RegExp(sp('缺陷') + '(?:' + sp('总数') + '|' + sp('总数') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)'),
-      valueFn: m => parseInt(m[1])
-    });
-    // 10. 校核数据条数
-    common.kpis.push({
-      name: '校核数据条数', unit: '条',
-      regex: new RegExp(sp('校核') + '(?:' + sp('数据') + ')?\\s*(?:' + sp('条数') + '|' + sp('数量') + ')?\\s*(?:' + sp('共') + ')?\\s*([\\d]+)\\s*(?:条|万条)?'),
-      valueFn: m => parseInt(m[1])
-    });
-    // 11. 发现问题数
-    common.kpis.push({
-      name: '发现问题数', unit: '个',
-      regex: new RegExp(sp('发现') + sp('问题') + '(?:' + sp('数') + '|' + sp('数量') + ')?\\s*([\\d]+)'),
-      valueFn: m => parseInt(m[1])
-    });
+    // 8. 需求总数 - from table data (需求状态统计表)
+    // Look for "需求状态" section with status counts
+    const demandStatusMatch = normText.match(/已上线\s*([\d]+)[\s\S]{0,50}?需求文档[\s\S]{0,50}?编制中[\s\S]{0,50}?([\d]+)[\s\S]{0,50}?技术评估[\s\S]{0,50}?中[\s\S]{0,100}?([\d]+)[\s\S]{0,50}?研发中[\s\S]{0,100}?([\d]+)/);
+    if (demandStatusMatch) {
+      const total = [parseInt(demandStatusMatch[1]), parseInt(demandStatusMatch[2]), parseInt(demandStatusMatch[3]), parseInt(demandStatusMatch[4])].reduce((a,b) => a+b, 0);
+      common.kpis.push({ name: '需求总数', value: total, unit: '个', trend: null, _isManual: true });
+    } else {
+      common.kpis.push({
+        name: '需求总数', unit: '个',
+        regex: new RegExp('(?:' + sp('需求') + sp('总数') + '|' + sp('需求') + sp('共计') + '|' + sp('需求') + sp('合计') + ')[\\s]*([\\d]+)'),
+        valueFn: m => parseInt(m[1])
+      });
+    }
+    // 9. 缺陷总数 - from PDF table
+    const defectMatch = normText.match(/缺陷状态[\s\S]{0,200}?未解决[\s\S]{0,100}?([\d]+)[\s\S]{0,100}?已解决[\s\S]{0,100}?([\d]+)[\s\S]{0,100}?转成需求[\s\S]{0,100}?([\d]+)/);
+    if (defectMatch) {
+      const total = parseInt(defectMatch[1]) + parseInt(defectMatch[2]) + parseInt(defectMatch[3]);
+      common.kpis.push({ name: '缺陷总数', value: total, unit: '个', trend: null, _isManual: true });
+    } else {
+      common.kpis.push({
+        name: '缺陷总数', unit: '个',
+        regex: new RegExp(sp('缺陷') + '(?:' + sp('总数') + '|' + sp('共计') + ')?[\\s]*([\\d]+)'),
+        valueFn: m => parseInt(m[1])
+      });
+    }
+    // 10. 校核数据条数 - from PDF table (校核及标注统计)
+    const auditMatch = normText.match(/校核数据条数[\s\S]{0,200}?合计[\s\S]{0,100}?([\d,，]+)/);
+    if (auditMatch) {
+      common.kpis.push({ name: '校核数据条数', value: parseInt(auditMatch[1].replace(/[，,]/g, '')), unit: '条', trend: null, _isManual: true });
+    } else {
+      common.kpis.push({
+        name: '校核数据条数', unit: '条',
+        regex: new RegExp(sp('校核数据条数') + '[\\s]*([\\d,，]+)'),
+        valueFn: m => parseInt(m[1].replace(/[，,]/g, ''))
+      });
+    }
+    // 11. 发现问题数 - from PDF table
+    const issueMatch = normText.match(/发现问题数[\s\S]{0,200}?合计[\s\S]{0,100}?([\d,，]+)/);
+    if (issueMatch) {
+      common.kpis.push({ name: '发现问题数', value: parseInt(issueMatch[1].replace(/[，,]/g, '')), unit: '个', trend: null, _isManual: true });
+    } else {
+      common.kpis.push({
+        name: '发现问题数', unit: '个',
+        regex: new RegExp(sp('发现问题数') + '[\\s]*([\\d,，]+)'),
+        valueFn: m => parseInt(m[1].replace(/[，,]/g, ''))
+      });
+    }
     // 12. 标注样本量
     common.kpis.push({
       name: '标注样本量', unit: '条',
@@ -1499,6 +1575,12 @@ function getPatterns(template, text, allTables) {
       regex: new RegExp(sp('语料') + sp('管理') + '[\\s\\S]{0,50}?' + '([\\d]+)\\s*%'),
       valueFn: m => parseInt(m[1])
     });
+
+    // 17. 整体进度 - from 检修/发版 data or general context
+    const progressMatch = normText.match(/(?:整体|项目|综合)\s*(?:进度|完成率)[\s]*[：:]*\s*([\d]+)\s*%/);
+    if (progressMatch) {
+      common.kpis.push({ name: '整体进度', value: parseInt(progressMatch[1]), unit: '%', trend: null, _isManual: true });
+    }
 
     // Also try to get KPIs from tables if text patterns didn't match
     // 全渠道重点指标 table
