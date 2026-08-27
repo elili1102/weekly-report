@@ -1221,7 +1221,9 @@ function extractData(text, template) {
       }
       return;
     }
-    const regex = new RegExp(p.regex.source, p.regex.flags);
+    // matchAll requires global flag - ensure it's present
+    const flags = p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g';
+    const regex = new RegExp(p.regex.source, flags);
     const matches = normText.matchAll(regex);
     for (const m of matches) {
       const name = p.nameFn ? p.nameFn(m) : p.name;
@@ -1745,39 +1747,73 @@ function generateDashboard() {
 
   showLoading('正在生成可视化看板...');
 
-  // Auto-detect template
-  let effectiveTemplate = template;
-  if (template === 'auto') {
-    if (/95598|呼入|工单|坐席|座席|客服/.test(text)) {
-      effectiveTemplate = '95598';
-    } else if (/项目|进度|交付|里程碑|需求/.test(text)) {
-      effectiveTemplate = 'project';
-    } else {
-      effectiveTemplate = 'general_ops';
+  // Safety timeout: force hide loading after 30s
+  const safetyTimer = setTimeout(() => {
+    hideLoading();
+    const statusEl = document.getElementById('uploadStatus');
+    if (statusEl) showStatus(statusEl, 'warning', '⚠️ 看板生成超时，请检查浏览器控制台（F12）查看错误信息');
+  }, 30000);
+
+  try {
+    // Auto-detect template
+    let effectiveTemplate = template;
+    if (template === 'auto') {
+      if (/95598|呼入|工单|坐席|座席|客服/.test(text)) {
+        effectiveTemplate = '95598';
+      } else if (/项目|进度|交付|里程碑|需求/.test(text)) {
+        effectiveTemplate = 'project';
+      } else {
+        effectiveTemplate = 'general_ops';
+      }
+    }
+
+    // Extract data
+    console.log('[Dashboard] 开始提取数据, 模板:', effectiveTemplate, '文本长度:', text.length);
+    currentData = extractData(text, effectiveTemplate);
+    console.log('[Dashboard] 数据提取完成, KPI数量:', currentData.kpis.length, '图表系列:', Object.keys(currentData.series).length);
+
+    // If few KPIs found, supplement with generic extraction
+    if (currentData.kpis.length < 5) {
+      console.log('[Dashboard] KPI数量不足(' + currentData.kpis.length + '), 用通用提取补充');
+      const genericKpis = extractGenericKPIs(text);
+      // Merge: add generic KPIs that aren't already in the list
+      const existingNames = new Set(currentData.kpis.map(k => k.name));
+      for (const gk of genericKpis) {
+        if (!existingNames.has(gk.name)) {
+          currentData.kpis.push(gk);
+          existingNames.add(gk.name);
+        }
+      }
+      console.log('[Dashboard] 补充后KPI数量:', currentData.kpis.length);
+    }
+
+    // Track source type
+    const activeTab = document.querySelector('.input-tab.active');
+    currentData.sourceType = activeTab ? activeTab.dataset.tab : 'unknown';
+
+    // Render
+    console.log('[Dashboard] 开始渲染看板');
+    renderDashboard(currentData);
+    console.log('[Dashboard] 看板渲染完成');
+
+    // Auto-save to history
+    try {
+      saveReportToHistory(currentData);
+    } catch(e) { console.warn('保存历史周报失败', e); }
+
+    clearTimeout(safetyTimer);
+    hideLoading();
+  } catch (err) {
+    clearTimeout(safetyTimer);
+    hideLoading();
+    console.error('[Dashboard] 生成看板失败:', err);
+    const statusEl = document.getElementById('uploadStatus');
+    if (statusEl) showStatus(statusEl, 'error', '❌ 看板生成失败：' + err.message + '。请打开浏览器控制台（F12）查看详细错误');
+    // Still try to show dashboard with whatever data we have
+    if (currentData && currentData.kpis && currentData.kpis.length > 0) {
+      try { renderDashboard(currentData); } catch(e2) { console.error('[Dashboard] 重试渲染也失败:', e2); }
     }
   }
-
-  // Extract data
-  currentData = extractData(text, effectiveTemplate);
-
-  // If no KPIs found, try generic extraction
-  if (currentData.kpis.length === 0) {
-    currentData.kpis = extractGenericKPIs(text);
-  }
-
-  // Track source type
-  const activeTab = document.querySelector('.input-tab.active');
-  currentData.sourceType = activeTab ? activeTab.dataset.tab : 'unknown';
-
-  // Render
-  renderDashboard(currentData);
-
-  // Auto-save to history
-  try {
-    saveReportToHistory(currentData);
-  } catch(e) { console.warn('保存历史周报失败', e); }
-
-  hideLoading();
 }
 
 function extractGenericKPIs(text) {
