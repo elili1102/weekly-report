@@ -1807,7 +1807,7 @@ function renderDashboard(data) {
   const dashboardEl = document.getElementById('dashboard');
   if (reportListEl) reportListEl.classList.add('view-hidden');
   if (inputSectionEl) inputSectionEl.classList.add('view-hidden');
-  if (dashboardEl) dashboardEl.classList.remove('view-hidden');
+  if (dashboardEl) { dashboardEl.classList.remove('view-hidden'); dashboardEl.classList.add('active'); }
   document.getElementById('btnExport').disabled = false;
 
   // Title & period
@@ -2105,7 +2105,7 @@ function hideLoading() {
 
 function resetDashboard() {
   const dashboardEl = document.getElementById('dashboard');
-  if (dashboardEl) dashboardEl.classList.add('view-hidden');
+  if (dashboardEl) { dashboardEl.classList.add('view-hidden'); dashboardEl.classList.remove('active'); }
   document.getElementById('btnExport').disabled = true;
   chartInstances.forEach(c => c.dispose());
   chartInstances = [];
@@ -2133,6 +2133,7 @@ function switchView(viewName) {
   reportListEl.classList.add('view-hidden');
   inputSectionEl.classList.add('view-hidden');
   dashboardEl.classList.add('view-hidden');
+  dashboardEl.classList.remove('active');
 
   if (navBtnList) navBtnList.classList.remove('active-nav');
   if (navBtnNew) navBtnNew.classList.remove('active-nav');
@@ -2146,6 +2147,7 @@ function switchView(viewName) {
     if (navBtnNew) navBtnNew.classList.add('active-nav');
   } else if (viewName === 'dashboard') {
     dashboardEl.classList.remove('view-hidden');
+    dashboardEl.classList.add('active');
   }
 }
 
