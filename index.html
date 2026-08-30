@@ -1285,6 +1285,8 @@ function extractData(text, template) {
       }
       return;
     }
+    // skip if no regex (e.g. fromTable-only KPIs that weren't resolved)
+    if (!p.regex) return;
     // matchAll requires global flag - ensure it's present
     const flags = p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g';
     const regex = new RegExp(p.regex.source, flags);
