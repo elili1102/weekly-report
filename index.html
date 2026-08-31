@@ -1573,27 +1573,27 @@ function getPatterns(template, text, allTables) {
       regex: new RegExp(sp('全渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
-    // 2. 电话渠道业务量占比
+    // 2. 电话渠道智能业务量占比
     common.kpis.push({
-      name: '电话渠道业务量占比', unit: '%',
+      name: '电话渠道智能业务量占比', unit: '%',
       regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
-    // 3. 电话渠道流程完成率
+    // 3. 电话渠道场景流程完成率
     common.kpis.push({
-      name: '电话渠道流程完成率', unit: '%',
+      name: '电话渠道场景流程完成率', unit: '%',
       regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
-    // 4. 互联网渠道业务量占比
+    // 4. 互联网渠道智能服务占比
     common.kpis.push({
-      name: '互联网渠道业务量占比', unit: '%',
-      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      name: '互联网渠道智能服务占比', unit: '%',
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + '(?:' + sp('客服') + ')?' + '(?:' + sp('服务') + ')?' + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
-    // 5. 互联网渠道流程完成率
+    // 5. 互联网渠道场景流程完成率
     common.kpis.push({
-      name: '互联网渠道流程完成率', unit: '%',
+      name: '互联网渠道场景流程完成率', unit: '%',
       regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
@@ -1701,11 +1701,11 @@ function getPatterns(template, text, allTables) {
     });
     common.kpis.push({
       fromTable: { rowMatch: '电话.*业务量占比|电话渠道.*占比', valueCol: '本期|本期值' },
-      name: '电话渠道业务量占比', unit: '%',
+      name: '电话渠道智能业务量占比', unit: '%',
     });
     common.kpis.push({
-      fromTable: { rowMatch: '互联网.*业务量占比|互联网渠道.*占比', valueCol: '本期|本期值' },
-      name: '互联网渠道业务量占比', unit: '%',
+      fromTable: { rowMatch: '互联网.*业务量占比|互联网渠道.*占比|互联网.*服务占比', valueCol: '本期|本期值' },
+      name: '互联网渠道智能服务占比', unit: '%',
     });
 
     // ====== Series ======
@@ -2353,7 +2353,7 @@ function renderKPIs(kpis, container) {
 
     html += '<div class="kpi-card ' + statusClass + '">';
     html += '<div class="kpi-label">' + escapeHtml(kpi.name) + '</div>';
-    html += '<div class="kpi-value">' + formatNumber(kpi.value) + (kpi.unit ? '<span style="font-size:14px;font-weight:400;color:#78909c">' + escapeHtml(kpi.unit) + '</span>' : '') + '</div>';
+    html += '<div class="kpi-value">' + formatNumber(kpi.value) + (kpi.unit ? escapeHtml(kpi.unit) : '') + '</div>';
     if (changeHTML) html += '<div class="kpi-change">' + changeHTML + '</div>';
     if (gapHTML) html += '<div class="kpi-gap">' + gapHTML + '</div>';
     html += '<div class="kpi-progress"><div class="fill ' + (statusClass || 'success') + '" style="width:' + progressWidth + '"></div></div>';
