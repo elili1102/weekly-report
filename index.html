@@ -132,7 +132,7 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
     html { font-size: 15px; -webkit-font-smoothing: antialiased; }
     body {
       font-family: var(--font-body);
-      background: var(--c-bg);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: var(--c-text);
       line-height: 1.6;
       min-height: 100vh;
@@ -904,135 +904,83 @@ var Vr={},Br={};var Fr=function(){function t(t,e,n){var i=this;this._sleepAfterS
     .view-hidden { display: none !important; }
   
 /* ===== Dashboard Reference Style (95598 style) ===== */
-#dashboardContent .container{max-width:1400px;margin:0 auto;padding:0 24px 40px}
-#dashboardContent .header{background:linear-gradient(135deg,#006B54 0%,#008667 50%,#4CAF50 100%);color:white;padding:32px 40px 24px;position:relative;overflow:hidden;border-radius:0;margin-bottom:0}
-#dashboardContent .header::before{content:'';position:absolute;top:-50%;right:-10%;width:400px;height:400px;background:rgba(255,255,255,0.05);border-radius:50%}
-#dashboardContent .header-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-#dashboardContent .header h1{font-size:26px;font-weight:700;letter-spacing:1px;color:white;margin-bottom:0}
-#dashboardContent .header .subtitle{font-size:15px;opacity:0.9;margin-top:6px;color:white}
-#dashboardContent .header .period-badge{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 18px;font-size:14px;backdrop-filter:blur(4px);color:white;white-space:nowrap}
-#dashboardContent .summary-strip{display:flex;gap:0;background:var(--c-surface);margin:-12px 24px 20px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);position:relative;z-index:2;overflow:hidden}
-#dashboardContent .summary-item{flex:1;padding:18px 16px;text-align:center;border-right:1px solid var(--c-border)}
-#dashboardContent .summary-item:last-child{border-right:none}
-#dashboardContent .summary-item .s-value{font-size:28px;font-weight:700;color:#006B54}
-#dashboardContent .summary-item .s-value.warn{color:#FF9800}
-#dashboardContent .summary-item .s-value.danger{color:#E53935}
-#dashboardContent .summary-item .s-value.accent{color:#4CAF50}
-#dashboardContent .summary-item .s-label{font-size:12px;color:#78909c;margin-top:4px}
-#dashboardContent .summary-item .s-change{font-size:11px;margin-top:2px}
-#dashboardContent .s-up{color:#4CAF50}
-#dashboardContent .s-down{color:#E53935}
-#dashboardContent .section{margin-bottom:24px}
-#dashboardContent .section-title{font-size:17px;font-weight:700;color:#006B54;padding:10px 0;display:flex;align-items:center;gap:8px;margin-bottom:0;border-bottom:none}
-#dashboardContent .section-title .icon{width:28px;height:28px;background:linear-gradient(135deg,#006B54,#4CAF50);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;flex-shrink:0}
-#dashboardContent .card{background:var(--c-surface);border-radius:12px;box-shadow:0 2px 12px rgba(0,107,84,0.06);padding:20px;transition:box-shadow 0.2s,transform 0.2s}
-#dashboardContent .card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,107,84,0.12)}
-#dashboardContent .card-title{font-size:14px;font-weight:600;color:#2c3e50;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e0e7e5;display:flex;align-items:center;gap:6px}
-#dashboardContent .card-title .dot{width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0}
-#dashboardContent .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-#dashboardContent .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
-#dashboardContent .chart-box{width:100%;height:300px}
-#dashboardContent .chart-box-sm{width:100%;height:260px}
-#dashboardContent .chart-box-lg{width:100%;height:340px}
-#dashboardContent .indicator-table{width:100%;border-collapse:collapse;font-size:13px}
-#dashboardContent .indicator-table th{background:linear-gradient(135deg,#006B54,#008667);color:white;padding:10px 12px;text-align:center;font-weight:500}
-#dashboardContent .indicator-table td{padding:9px 12px;text-align:center;border-bottom:1px solid #e0e7e5}
-#dashboardContent .indicator-table tr:hover td{background:#f5faf8}
-#dashboardContent .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600}
-#dashboardContent .badge-success{background:#e8f5e9;color:#2e7d32}
-#dashboardContent .badge-fail{background:#fbe9e7;color:#c62828}
-#dashboardContent .progress-wrap{margin-bottom:14px}
-#dashboardContent .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-#dashboardContent .progress-label{font-size:13px;font-weight:500}
-#dashboardContent .progress-value{font-size:13px;font-weight:700;color:#006B54}
-#dashboardContent .progress-bar{width:100%;height:10px;background:#e8f0ed;border-radius:5px;overflow:hidden}
-#dashboardContent .progress-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#006B54,#4CAF50);transition:width 1s ease}
-#dashboardContent .progress-fill.warn{background:linear-gradient(90deg,#f57c00,#FF9800)}
-#dashboardContent .progress-fill.low{background:linear-gradient(90deg,#ef6c00,#ff9800)}
-#dashboardContent .milestone-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-#dashboardContent .milestone-card{background:linear-gradient(135deg,#f5faf8 0%,#e8f5e9 100%);border:1px solid #c8e6c9;border-radius:10px;padding:16px}
-#dashboardContent .milestone-card h4{font-size:14px;color:#006B54;margin-bottom:8px;line-height:1.4}
-#dashboardContent .milestone-card .ms-detail{font-size:12px;color:#78909c;line-height:1.8}
-#dashboardContent .ms-tag{display:inline-block;padding:1px 8px;border-radius:8px;font-size:11px;margin-right:4px}
-#dashboardContent .ms-tag-done{background:#4CAF50;color:white}
-#dashboardContent .ms-tag-dev{background:#42a5f5;color:white}
-#dashboardContent .ms-tag-test{background:#ab47bc;color:white}
-#dashboardContent .ms-tag-eval{background:#ff9800;color:white}
-#dashboardContent .risk-stats{display:flex;gap:16px;margin-bottom:16px}
-#dashboardContent .risk-stat{flex:1;padding:14px;border-radius:10px;text-align:center}
-#dashboardContent .risk-stat .rs-val{font-size:24px;font-weight:700}
-#dashboardContent .risk-stat .rs-label{font-size:12px;margin-top:4px}
-#dashboardContent .rs-green{background:#e8f5e9}
-#dashboardContent .rs-green .rs-val{color:#2e7d32}
-#dashboardContent .rs-orange{background:#fff3e0}
-#dashboardContent .rs-orange .rs-val{color:#e65100}
-#dashboardContent .rs-red{background:#fbe9e7}
-#dashboardContent .rs-red .rs-val{color:#c62828}
-#dashboardContent .plan-list{list-style:none;padding:0;margin:0}
-#dashboardContent .plan-list li{padding:10px 14px;border-left:3px solid #4CAF50;margin-bottom:8px;background:#f8faf9;border-radius:0 8px 8px 0;font-size:13px;line-height:1.6}
-#dashboardContent .plan-list li .plan-tag{display:inline-block;padding:1px 8px;border-radius:8px;font-size:11px;background:#006B54;color:white;margin-right:6px}
-#dashboardContent .data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border-radius:8px;overflow:hidden;border:1px solid #c8e6c9}
-#dashboardContent .data-table th{background:linear-gradient(135deg,#006B54,#008667);color:white;padding:10px 12px;font-weight:500;text-align:center;font-size:11px;white-space:nowrap}
-#dashboardContent .data-table td{padding:9px 12px;border-bottom:1px solid #e0e7e5;color:#2c3e50;font-size:11px;background:white;text-align:center}
+#dashboardContent .container{max-width:1400px;margin:0 auto}
+#dashboardContent .section,#dashboardContent .header{background:white;padding:24px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+#dashboardContent .header{text-align:center;padding:28px 24px}
+#dashboardContent .header h1{font-size:26px;color:#333;margin-bottom:8px}
+#dashboardContent .header h2{font-size:18px;color:#667eea;margin-bottom:10px}
+#dashboardContent .header p{font-size:14px;color:#666}
+#dashboardContent .section-title{font-size:16px;color:#333;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #667eea;font-weight:600}
+#dashboardContent .section-title span{display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:3px 10px;border-radius:6px;margin-right:8px;font-size:13px}
+#dashboardContent .sub-title{font-size:14px;color:#333;margin:14px 0 8px;font-weight:600}
+#dashboardContent .summary-text{font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;text-align:justify}
+#dashboardContent .bold-num{font-weight:700;color:#333}
+#dashboardContent .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+#dashboardContent .kpi-card{background:white;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid #e5e7eb}
+#dashboardContent .kpi-card.danger{border-top:3px solid #ef4444}
+#dashboardContent .kpi-card.warning{border-top:3px solid #f59e0b}
+#dashboardContent .kpi-card.success{border-top:3px solid #10b981}
+#dashboardContent .kpi-label{font-size:12px;color:#666;margin-bottom:6px}
+#dashboardContent .kpi-value{font-size:26px;font-weight:700;color:#333}
+#dashboardContent .kpi-change{font-size:11px;color:#666;margin-top:4px}
+#dashboardContent .kpi-change .up{color:#10b981}
+#dashboardContent .kpi-change .down{color:#ef4444}
+#dashboardContent .kpi-gap{font-size:11px;color:#999;margin-top:2px}
+#dashboardContent .kpi-progress{background:#e5e7eb;border-radius:4px;height:6px;margin-top:8px}
+#dashboardContent .kpi-progress .fill{border-radius:4px;height:6px}
+#dashboardContent .kpi-progress .fill.danger{background:#ef4444}
+#dashboardContent .kpi-progress .fill.warning{background:#f59e0b}
+#dashboardContent .kpi-progress .fill.success{background:#10b981}
+#dashboardContent .kpi-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px}
+#dashboardContent .kpi-tag.pass{background:#d1fae5;color:#059669}
+#dashboardContent .kpi-tag.fail{background:#fee2e2;color:#dc2626}
+#dashboardContent .chart-box{background:#f8f9fa;border-radius:8px;padding:12px;margin:0}
+#dashboardContent .chart-box h4{font-size:13px;color:#333;margin-bottom:10px;text-align:center;font-weight:600}
+#dashboardContent .chart-container{width:100%;height:280px}
+#dashboardContent .chart-container-sm{width:100%;height:220px}
+#dashboardContent .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+#dashboardContent .chart-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0}
+#dashboardContent .data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border-radius:6px;overflow:hidden;border:1px solid #bfdbfe}
+#dashboardContent .data-table th{background:#e0f2fe;color:#1e40af;padding:10px 12px;font-weight:600;text-align:left;font-size:11px;white-space:nowrap}
+#dashboardContent .data-table td{padding:9px 12px;border-bottom:1px solid #f0f7ff;color:#444;font-size:11px;background:white}
 #dashboardContent .data-table tr:last-child td{border-bottom:none}
-#dashboardContent .data-table tr:hover td{background:#f5faf8}
-#dashboardContent .data-table tr td:first-child{text-align:center;color:#006B54;font-weight:600}
-#dashboardContent .table-box{background:white;border-radius:12px;padding:14px;border:1px solid #c8e6c9;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,107,84,0.06)}
-#dashboardContent .table-box h4{font-size:13px;color:#006B54;margin-bottom:10px;text-align:center;font-weight:600}
-#dashboardContent .analysis-box{background:#f5faf8;border-radius:8px;padding:14px;margin-top:12px;border:1px solid #c8e6c9}
-#dashboardContent .analysis-box h4{color:#006B54;font-size:13px;margin-bottom:10px}
+#dashboardContent .data-table tr:hover td{background:#f0f7ff}
+#dashboardContent .data-table tr td:first-child{text-align:center;color:#667eea;font-weight:600}
+#dashboardContent .table-box{background:white;border-radius:8px;padding:14px;border:1px solid #bfdbfe}
+#dashboardContent .table-box h4{font-size:13px;color:#333;margin-bottom:10px;text-align:center;font-weight:600}
+#dashboardContent .analysis-box{background:#eef2ff;border-radius:8px;padding:14px;margin-top:12px}
+#dashboardContent .analysis-box h4{color:#4f46e5;font-size:13px;margin-bottom:10px}
 #dashboardContent .analysis-box p{color:#555;font-size:12px;line-height:1.8;margin-bottom:6px}
 #dashboardContent .work-plan .plan-content{max-height:120px;overflow:hidden;position:relative;transition:max-height 0.5s ease}
 #dashboardContent .work-plan.expanded .plan-content{max-height:5000px;overflow:visible}
 #dashboardContent .work-plan .plan-content::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,white);pointer-events:none}
 #dashboardContent .work-plan.expanded .plan-content::after{display:none}
-#dashboardContent .toggle-btn{display:block;margin:12px auto 0;padding:6px 20px;background:linear-gradient(135deg,#006B54,#008667);color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px}
+#dashboardContent .toggle-btn{display:block;margin:12px auto 0;padding:6px 20px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px}
 #dashboardContent .toggle-btn:hover{opacity:0.9}
-#dashboardContent .milestone-item{padding:10px 0;border-bottom:1px dashed #e0e7e5;display:flex;gap:10px;align-items:flex-start}
+#dashboardContent .milestone-item{padding:10px 0;border-bottom:1px dashed #e5e7eb;display:flex;gap:10px;align-items:flex-start}
 #dashboardContent .milestone-item:last-child{border-bottom:none}
-#dashboardContent .milestone-dot{width:8px;height:8px;border-radius:50%;background:#006B54;margin-top:6px;flex-shrink:0}
+#dashboardContent .milestone-dot{width:8px;height:8px;border-radius:50%;background:#667eea;margin-top:6px;flex-shrink:0}
 #dashboardContent .milestone-content{flex:1}
-#dashboardContent .milestone_title{font-size:12px;font-weight:600;color:#2c3e50;margin-bottom:3px}
-#dashboardContent .milestone_desc{font-size:11px;color:#78909c;line-height:1.6}
+#dashboardContent .milestone-title{font-size:12px;font-weight:600;color:#333;margin-bottom:3px}
+#dashboardContent .milestone-desc{font-size:11px;color:#666;line-height:1.6}
 #dashboardContent .appendix-block{margin-bottom:12px}
-#dashboardContent .appendix-title{padding:12px 16px;background:transparent;color:#006B54;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border:none;border-bottom:1px solid #e8f0ed;transition:all .2s ease;width:100%}
-#dashboardContent .appendix-title:hover{background:#f5faf8}
+#dashboardContent .appendix-title{padding:12px 16px;background:transparent;color:#667eea;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border:none;border-bottom:1px solid #eef2ff;transition:all .2s ease;width:100%}
+#dashboardContent .appendix-title:hover{background:#f5f3ff}
 #dashboardContent .appendix-title .appendix-left{display:flex;align-items:center;gap:8px}
-#dashboardContent .appendix-icon{font-size:10px;transition:transform .3s;color:#006B54}
+#dashboardContent .appendix-icon{font-size:10px;transition:transform .3s;color:#667eea}
+#dashboardContent .appendix-detail-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:11px;padding:4px 12px;border-radius:12px;font-weight:500;display:inline-flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(102,126,234,0.2)}
 #dashboardContent .appendix-table-wrapper{max-height:0;overflow:hidden;transition:max-height .4s ease}
 #dashboardContent .appendix-table-wrapper.open{max-height:2000px;overflow:auto}
-#dashboardContent .appendix-table{font-size:11px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,107,84,0.06);table-layout:fixed;width:100%;border-collapse:collapse}
-#dashboardContent .appendix-table th{font-size:11px;white-space:normal;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);color:#006B54;padding:8px 6px;line-height:1.4;font-weight:600}
+#dashboardContent .appendix-table{font-size:11px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);table-layout:fixed;width:100%;border-collapse:collapse}
+#dashboardContent .appendix-table th{font-size:11px;white-space:normal;background:linear-gradient(90deg,#eef2ff,#e0e7ff);color:#4338ca;padding:8px 6px;line-height:1.4;font-weight:600}
 #dashboardContent .appendix-table td{font-size:10.5px;line-height:1.5;padding:6px;word-break:break-all;vertical-align:top;border-bottom:1px solid #e8f0ed}
-#dashboardContent .footer{text-align:center;color:#78909c;padding:20px;font-size:12px;border-top:1px solid #e0e7e5;background:white}
-#dashboardContent .kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
-#dashboardContent .kpi-card{background:white;border-radius:12px;padding:14px 10px;text-align:center;border:1px solid #e0e7e5;box-shadow:0 2px 12px rgba(0,107,84,0.06);transition:transform 0.2s,box-shadow 0.2s}
-#dashboardContent .kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,107,84,0.1)}
-#dashboardContent .kpi-card.danger{border-top:3px solid #E53935}
-#dashboardContent .kpi-card.warning{border-top:3px solid #FF9800}
-#dashboardContent .kpi-card.success{border-top:3px solid #4CAF50}
-#dashboardContent .kpi-label{font-size:12px;color:#78909c;margin-bottom:6px}
-#dashboardContent .kpi-value{font-size:26px;font-weight:700;color:#006B54}
-#dashboardContent .kpi-change{font-size:11px;color:#78909c;margin-top:4px}
-#dashboardContent .kpi-change .up{color:#4CAF50}
-#dashboardContent .kpi-change .down{color:#E53935}
-#dashboardContent .kpi-gap{font-size:11px;color:#90a4ae;margin-top:2px}
-#dashboardContent .kpi-progress{background:#e8f0ed;border-radius:5px;height:6px;margin-top:8px}
-#dashboardContent .kpi-progress .fill{border-radius:5px;height:6px}
-#dashboardContent .kpi-progress .fill.danger{background:#E53935}
-#dashboardContent .kpi-progress .fill.warning{background:#FF9800}
-#dashboardContent .kpi-progress .fill.success{background:linear-gradient(90deg,#006B54,#4CAF50)}
-#dashboardContent .kpi-tag{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px}
-#dashboardContent .kpi-tag.pass{background:#e8f5e9;color:#2e7d32}
-#dashboardContent .kpi-tag.fail{background:#fbe9e7;color:#c62828}
-#dashboardContent .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:12px 0}
-#dashboardContent .chart-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin:12px 0}
-#dashboardContent .chart-container{width:100%;height:280px}
-#dashboardContent .chart-container-sm{width:100%;height:220px}
-#dashboardContent .summary-text{font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;text-align:justify}
-#dashboardContent .sub-title{font-size:14px;color:#006B54;margin:14px 0 8px;font-weight:600}
-#dashboardContent .bold-num{font-weight:700;color:#006B54}
-@media(max-width:900px){#dashboardContent .kpi-row{grid-template-columns:repeat(3,1fr)}#dashboardContent .chart-row,#dashboardContent .chart-row-3,#dashboardContent .grid-2,#dashboardContent .grid-3,#dashboardContent .milestone-grid{grid-template-columns:1fr}#dashboardContent .summary-strip{flex-wrap:wrap}#dashboardContent .summary-item{min-width:50%}}
+#dashboardContent .status-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+#dashboardContent .status-done{background:#d1fae5;color:#065f46}
+#dashboardContent .status-checking{background:#fef3c7;color:#92400e}
+#dashboardContent .status-pending{background:#dbeafe;color:#1e40af}
+#dashboardContent .status-fixing{background:#fce7f3;color:#9d174d}
+#dashboardContent .footer{text-align:center;color:rgba(255,255,255,0.7);padding:16px;font-size:12px}
+@media(max-width:900px){#dashboardContent .kpi-row{grid-template-columns:repeat(3,1fr)}#dashboardContent .chart-row,#dashboardContent .chart-row-3{grid-template-columns:1fr}}
 
 /* ===== Dashboard active: hide app-header, style dashboard-area ===== */
 .dashboard-area.active ~ .app-header,
@@ -1371,7 +1319,7 @@ function extractData(text, template) {
       // Find trend
       let trend = null;
       const trendIdx = normText.indexOf(m[0]);
-      const contextWindow = normText.substring(Math.max(0, trendIdx - 120), trendIdx + m[0].length + 120);
+      const contextWindow = normText.substring(Math.max(0, trendIdx - 300), trendIdx + m[0].length + 300);
       // Match "环比下降 X.XX 个百分点" or "环比上升 X.XX%" etc.
       const trendMatch = contextWindow.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
                          contextWindow.match(/([\d.]+)\s*(?:个百分点|%)\s*(?:的)?环[比节]/);
@@ -1383,9 +1331,11 @@ function extractData(text, template) {
       // Extract target value if present in context
       var targetVal = null;
       var targetOp = '>=';
-      var targetMatch = contextWindow.match(/目标[>=≤≤≤]?\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/(?:考核|要求)[>=≤≤≤]?\s*([\d.]+)\s*%/) ||
+      var targetMatch = contextWindow.match(/[≥>]=?\s*([\d.]+)\s*%/) ||
+                        contextWindow.match(/目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
+                        contextWindow.match(/(?:考核|要求)[≥>=≤]*\s*([\d.]+)\s*%/) ||
                         contextWindow.match(/不低于\s*([\d.]+)\s*%/) ||
+                        contextWindow.match(/年度目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
                         contextWindow.match(/([\d.]+)\s*%.*(?:目标|考核)/);
       if (targetMatch) { targetVal = parseFloat(targetMatch[1]); }
       // Extract yoy (同比)
@@ -1620,31 +1570,31 @@ function getPatterns(template, text, allTables) {
     // 1. 全渠道业务量占比
     common.kpis.push({
       name: '全渠道业务量占比', unit: '%',
-      regex: new RegExp(sp('全渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('全渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 2. 电话渠道业务量占比
     common.kpis.push({
       name: '电话渠道业务量占比', unit: '%',
-      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 3. 电话渠道流程完成率
     common.kpis.push({
       name: '电话渠道流程完成率', unit: '%',
-      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 4. 互联网渠道业务量占比
     common.kpis.push({
       name: '互联网渠道业务量占比', unit: '%',
-      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 5. 互联网渠道流程完成率
     common.kpis.push({
       name: '互联网渠道流程完成率', unit: '%',
-      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 6. 电话渠道服务量
@@ -2059,12 +2009,26 @@ function generateDashboard() {
   }
 }
 
-function extractGenericKPIs(text) {
+function extractGenericKPIs(text, template) {
+  // Name mapping for 95598 template
+  const nameMap95598 = {
+    '业务量占比': '全渠道智能客服业务量占比',
+    '智能客服业务量占比': '全渠道智能客服业务量占比',
+    '流程完成率': '智能客服流程完成率',
+  };
+  function mapName(name) {
+    if (template === '95598' || template === 'auto') {
+      for (var key in nameMap95598) {
+        if (name.includes(key)) return nameMap95598[key];
+      }
+    }
+    return name;
+  }
   const kpis = [];
   // Find all "xxx为/达 xx%" patterns
   const pctMatches = text.matchAll(/([\u4e00-\u9fa5]{2,10}(?:率|比|度|指数))\s*(?:[为：:达到]+)?\s*([\d.]+)\s*%/g);
   for (const m of pctMatches) {
-    kpis.push({ name: m[1], value: parseFloat(m[2]), unit: '%', trend: null });
+    kpis.push({ name: mapName(m[1]), value: parseFloat(m[2]), unit: '%', trend: null });
   }
   // Find all "xxx xx件/通/次" patterns
   const volMatches = text.matchAll(/([\u4e00-\u9fa5]{2,10}(?:量|数|总数|件数|次数))\s*(?:[为：:达到共]+)?\s*([\d,，]+)\s*(件|通|次|个|条|万)/g);
@@ -2093,129 +2057,115 @@ function renderDashboard(data) {
   const container = document.getElementById('dashboardContent');
   container.innerHTML = '';
 
-  // === Header ===
+  // === Header (centered white card, matching template) ===
   var periodText = data.period || '';
   var titleText = data.title || '运营周报看板';
-  var subtitleText = data.department || '国网客户服务中心 · 智能服务运营';
+  var subtitleText = data.department || '业务运营部';
   var headerHTML = '<div class="header">' +
-    '<div class="header-top">' +
-    '<div><h1>' + escapeHtml(titleText) + '</h1>' +
-    '<div class="subtitle">' + escapeHtml(subtitleText) + '</div></div>' +
-    '<div class="period-badge">📅 ' + escapeHtml(periodText) + '</div>' +
-    '</div></div>';
+    '<h1>' + escapeHtml(titleText) + '</h1>' +
+    '<h2>' + escapeHtml(periodText) + '</h2>' +
+    '<p>' + escapeHtml(subtitleText) + ' | 统计日期：' + new Date().toLocaleDateString('zh-CN') + '</p>' +
+    '</div>';
   container.insertAdjacentHTML('beforeend', headerHTML);
 
-  // === Summary Strip ===
+  // === KPI Cards Row (matching template kpi-row) ===
   if (data.kpis && data.kpis.length > 0) {
-    var stripHTML = '<div class="summary-strip">';
-    data.kpis.forEach(function(kpi) {
-      var valStr = formatNumber(kpi.value);
-      if (kpi.unit) valStr += '<span style="font-size:14px">' + escapeHtml(kpi.unit) + '</span>';
-      var valClass = 's-value';
-      var targetVal = kpi.target || kpi.targetValue;
-      if (targetVal != null && !isNaN(targetVal)) {
-        if (kpi.value >= targetVal) valClass += ' accent';
-        else if (kpi.value / targetVal < 0.8) valClass += ' danger';
-        else if (kpi.value / targetVal < 0.95) valClass += ' warn';
-      }
-      stripHTML += '<div class="summary-item">';
-      stripHTML += '<div class="' + valClass + '">' + valStr + '</div>';
-      stripHTML += '<div class="s-label">' + escapeHtml(kpi.name) + '</div>';
-      if (kpi.mom != null || kpi.trend) {
-        var momVal = kpi.mom != null ? kpi.mom : (kpi.trend ? kpi.trend.value * (kpi.trend.direction === 'up' ? 1 : -1) : null);
-        if (momVal != null) {
-          var isUp = momVal >= 0;
-          stripHTML += '<div class="s-change"><span class="' + (isUp ? 's-up' : 's-down') + '">' + (isUp ? '↑' : '↓') + Math.abs(momVal).toFixed(2) + '% 环比</span></div>';
-        }
-      } else if (targetVal != null) {
-        var op = kpi.targetOp || '>=';
-        stripHTML += '<div class="s-change" style="color:#78909c">目标' + op + targetVal + (kpi.unit || '%') + '</div>';
-      }
-      stripHTML += '</div>';
-    });
-    stripHTML += '</div>';
-    container.insertAdjacentHTML('beforeend', stripHTML);
+    renderKPIs(data.kpis, container);
   }
 
   // === Main Content Container ===
-  container.insertAdjacentHTML('beforeend', '<div class="container">');
+  container.insertAdjacentHTML('beforeend', '<div class="container" style="padding:0 0 40px">');
   var mainContainer = container.querySelector('.container');
 
-  // Section 1: KPI Overview
+  // Section 1: Business Operations Summary
   if (data.summary || (data.series && Object.keys(data.series).length > 0) || (data.kpis && data.kpis.length > 0)) {
-    var sec1 = '<div class="section"><div class="section-title"><span class="icon">📊</span> 一、运营指标概况</div>';
-    sec1 += '<div class="grid-2">';
-    // Left: Chart
-    sec1 += '<div class="card"><div class="card-title"><span class="dot"></span>重点指标完成率 vs 年度目标</div>';
-    sec1 += '<div class="chart-box" id="dashChartRadar" style="width:100%;height:300px"></div></div>';
-    // Right: Indicator Table
-    sec1 += '<div class="card"><div class="card-title"><span class="dot"></span>考核指标完成情况</div>';
-    if (data.kpis && data.kpis.length > 0) {
-      sec1 += '<table class="indicator-table"><thead><tr><th>渠道</th><th>指标</th><th>本期</th><th>环比</th><th>年度目标</th><th>达标</th></tr></thead><tbody>';
-      data.kpis.forEach(function(kpi) {
-        var targetVal = kpi.target || kpi.targetValue;
-        var passed = targetVal != null && !isNaN(targetVal) && kpi.value >= targetVal;
-        var badgeClass = passed ? 'badge-success' : 'badge-fail';
-        var badgeText = passed ? '达标 ✓' : '未达标';
-        var momStr = '';
-        if (kpi.mom != null) {
-          var isUp = kpi.mom >= 0;
-          momStr = '<span class="' + (isUp ? 's-up' : 's-down') + '">' + (isUp ? '↑' : '↓') + Math.abs(kpi.mom).toFixed(2) + '%</span>';
-        }
-        var channel = kpi.channel || '全渠道';
-        var indicator = kpi.indicator || kpi.name;
-        var opLabel = kpi.targetOp || '>=';
-        sec1 += '<tr><td>' + escapeHtml(channel) + '</td>';
-        sec1 += '<td>' + escapeHtml(indicator) + '</td>';
-        sec1 += '<td><b>' + formatNumber(kpi.value) + (kpi.unit || '%') + '</b></td>';
-        sec1 += '<td>' + (momStr || '-') + '</td>';
-        sec1 += '<td>' + opLabel + (targetVal || '') + (kpi.unit || '%') + '</td>';
-        sec1 += '<td><span class="badge ' + badgeClass + '">' + badgeText + '</span></td></tr>';
-      });
-      sec1 += '</tbody></table>';
-    }
+    var secNum = 1;
+    var sec1 = '<div class="section"><div class="section-title"><span>0' + secNum + '</span>业务运营情况</div>';
+    
+    // Summary text if available
     if (data.analysis) {
-      sec1 += '<div style="margin-top:14px;font-size:12px;color:#78909c;line-height:1.6">';
+      sec1 += '<div class="summary-text">';
       if (Array.isArray(data.analysis)) {
-        data.analysis.forEach(function(item) { sec1 += '⚠️ ' + escapeHtml(item) + '<br>'; });
+        data.analysis.forEach(function(item) { sec1 += escapeHtml(item) + '<br>'; });
       } else {
         sec1 += escapeHtml(data.analysis);
       }
       sec1 += '</div>';
     }
-    sec1 += '</div></div>'; // close grid-2, section
+
+    // Charts row
+    sec1 += '<div class="chart-row">';
+    sec1 += '<div class="chart-box"><h4>重点指标完成率 vs 年度目标</h4><div class="chart-container" id="dashChartRadar"></div></div>';
+    var hasInternet = false;
+    for (var key in data.series) { if (/互联网|渠道|占比/i.test(key)) { hasInternet = true; break; } }
+    if (hasInternet) {
+      sec1 += '<div class="chart-box"><h4>互联网渠道业务量占比</h4><div class="chart-container" id="dashChartInternet"></div></div>';
+    } else {
+      sec1 += '<div class="chart-box"><h4>考核指标完成情况</h4><div class="chart-container" id="dashChartKpiTable"></div></div>';
+    }
+    sec1 += '</div>';
+
+    // Tables
+    if (data.kpis && data.kpis.length > 0) {
+      sec1 += '<div class="table-box" style="margin-top:16px"><h4>考核指标详细数据</h4>';
+      sec1 += '<table class="data-table"><thead><tr><th>渠道</th><th>指标</th><th>本期值</th><th>环比</th><th>同比</th><th>年度目标</th><th>达标</th></tr></thead><tbody>';
+      data.kpis.forEach(function(kpi) {
+        var targetVal = kpi.target || kpi.targetValue;
+        var passed = targetVal != null && !isNaN(targetVal) && kpi.value >= targetVal;
+        var badgeClass = passed ? 'kpi-tag pass' : 'kpi-tag fail';
+        var badgeText = passed ? '√达标' : '×未达标';
+        var momStr = '-';
+        if (kpi.mom != null) {
+          var isUp = kpi.mom >= 0;
+          momStr = '<span style="color:' + (isUp ? '#10b981' : '#ef4444') + '">' + (isUp ? '↑' : '↓') + Math.abs(kpi.mom).toFixed(2) + '%</span>';
+        }
+        var yoyStr = '-';
+        if (kpi.yoy != null) {
+          var isYoyUp = kpi.yoy >= 0;
+          yoyStr = '<span style="color:' + (isYoyUp ? '#10b981' : '#ef4444') + '">' + (isYoyUp ? '↑' : '↓') + Math.abs(kpi.yoy).toFixed(2) + '%</span>';
+        }
+        var channel = kpi.channel || '全渠道';
+        var indicator = kpi.indicator || kpi.name;
+        var opLabel = kpi.targetOp || '≥';
+        sec1 += '<tr><td>' + escapeHtml(channel) + '</td>';
+        sec1 += '<td>' + escapeHtml(indicator) + '</td>';
+        sec1 += '<td><b>' + formatNumber(kpi.value) + (kpi.unit || '%') + '</b></td>';
+        sec1 += '<td>' + momStr + '</td>';
+        sec1 += '<td>' + yoyStr + '</td>';
+        sec1 += '<td>' + opLabel + (targetVal || '') + (kpi.unit || '%') + '</td>';
+        sec1 += '<td><span class="' + badgeClass + '">' + badgeText + '</span></td></tr>';
+      });
+      sec1 += '</tbody></table></div>';
+    }
+    sec1 += '</div>';
     mainContainer.insertAdjacentHTML('beforeend', sec1);
   }
 
-  // Section 2: Demand & Defect
+  // Section 2: Demand & Defect / Data Tables
   var hasDemandDefect = (data.tables && data.tables.length > 0) || (data.series && (data.series['需求状态分布'] || data.series['缺陷状态分布']));
   if (hasDemandDefect) {
-    var sec2 = '<div class="section"><div class="section-title"><span class="icon">📋</span> 二、需求及检修情况</div>';
-    sec2 += '<div class="grid-3">';
-    sec2 += '<div class="card"><div class="card-title"><span class="dot"></span>需求状态分布</div><div class="chart-box-sm" id="dashChartDemand"></div></div>';
-    sec2 += '<div class="card"><div class="card-title"><span class="dot"></span>缺陷状态分布</div><div class="chart-box-sm" id="dashChartDefect"></div></div>';
-    // Release / version info card
-    sec2 += '<div class="card"><div class="card-title"><span class="dot"></span>本周发版概况</div>';
-    sec2 += '<div style="padding:10px 0">';
-    if (data.version) {
-      sec2 += '<div style="text-align:center;margin-bottom:16px"><div style="font-size:36px;font-weight:700;color:#006B54">' + escapeHtml(data.version) + '</div>';
-      sec2 += '<div style="font-size:13px;color:#78909c;margin-top:4px">' + escapeHtml(data.versionDate || '') + ' 发布</div></div>';
+    var sec2 = '<div class="section"><div class="section-title"><span>02</span>需求及检修情况</div>';
+    if (data.summary) {
+      sec2 += '<div class="summary-text">' + escapeHtml(data.summary) + '</div>';
     }
-    sec2 += '<div class="progress-wrap"><div class="progress-header"><span class="progress-label">发版任务项</span><span class="progress-value">' + escapeHtml(data.versionDetail || '请查看发版详情') + '</span></div>';
-    sec2 += '<div class="progress-bar"><div class="progress-fill" style="width:' + (data.versionProgress || '100') + '%"></div></div></div>';
-    sec2 += '</div></div>';
-    sec2 += '</div>'; // close grid-3
-    // Tables below charts
+    sec2 += '<div class="chart-row">';
+    sec2 += '<div class="chart-box"><h4>需求状态分布</h4><div class="chart-container-sm" id="dashChartDemand"></div></div>';
+    sec2 += '<div class="chart-box"><h4>缺陷状态分布</h4><div class="chart-container-sm" id="dashChartDefect"></div></div>';
+    sec2 += '</div>';
     if (data.tables && data.tables.length > 0) {
-      sec2 += '<div class="grid-2" style="margin-top:20px">';
+      sec2 += '<div class="chart-row" style="margin-top:16px">';
       data.tables.forEach(function(table, idx) {
         if (idx < 2) {
-          sec2 += '<div class="card"><div class="card-title"><span class="dot"></span>' + escapeHtml(table.title) + '</div>';
+          sec2 += '<div class="table-box"><h4>' + escapeHtml(table.title) + '</h4>';
           sec2 += buildTableHTML(table);
           sec2 += '</div>';
         }
       });
       sec2 += '</div>';
+    }
+    if (data.tables && data.tables.length > 0) {
+      sec2 += '<div class="analysis-box"><h4>📊 数据分析</h4>';
+      sec2 += '<p>本周需求及检修数据整体平稳，各项指标均在可控范围内。</p></div>';
     }
     sec2 += '</div>';
     mainContainer.insertAdjacentHTML('beforeend', sec2);
@@ -2223,20 +2173,19 @@ function renderDashboard(data) {
 
   // Section 3: Knowledge & Annotation
   if (data.tables && data.tables.length > 2) {
-    var sec3 = '<div class="section"><div class="section-title"><span class="icon">✅</span> 三、校核、标注与知识数据</div>';
-    sec3 += '<div class="grid-2">';
-    sec3 += '<div class="card"><div class="card-title"><span class="dot"></span>' + escapeHtml(data.tables[2].title || '知识数据治理') + '</div>';
+    var sec3 = '<div class="section"><div class="section-title"><span>03</span>校核、标注与知识数据</div>';
+    sec3 += '<div class="chart-row">';
+    sec3 += '<div class="table-box"><h4>' + escapeHtml(data.tables[2].title || '知识数据治理') + '</h4>';
     sec3 += buildTableHTML(data.tables[2]);
     sec3 += '</div>';
-    sec3 += '<div class="card"><div class="card-title"><span class="dot"></span>知识维护统计</div><div class="chart-box" id="dashChartKnowledge"></div></div>';
+    sec3 += '<div class="chart-box"><h4>知识维护统计</h4><div class="chart-container" id="dashChartKnowledge"></div></div>';
     sec3 += '</div>';
-    // Additional charts row
     if (data.tables.length > 3) {
-      sec3 += '<div style="margin-top:20px" class="grid-2">';
-      sec3 += '<div class="card"><div class="card-title"><span class="dot"></span>' + escapeHtml(data.tables[3].title || '数据标注情况') + '</div>';
+      sec3 += '<div class="chart-row" style="margin-top:16px">';
+      sec3 += '<div class="table-box"><h4>' + escapeHtml(data.tables[3].title || '数据标注情况') + '</h4>';
       sec3 += buildTableHTML(data.tables[3]);
       sec3 += '</div>';
-      sec3 += '<div class="card"><div class="card-title"><span class="dot"></span>标签应用统计</div><div class="chart-box-sm" id="dashChartTag"></div></div>';
+      sec3 += '<div class="chart-box"><h4>标签应用统计</h4><div class="chart-container-sm" id="dashChartTag"></div></div>';
       sec3 += '</div>';
     }
     sec3 += '</div>';
@@ -2245,83 +2194,64 @@ function renderDashboard(data) {
 
   // Section 4: Risk Management
   if (data.points && data.points.length > 0) {
-    var sec4 = '<div class="section"><div class="section-title"><span class="icon">⚠️</span> 四、服务风险管理</div>';
-    // Risk stats summary
-    var normalCount = 0, warnCount = 0, severeCount = 0;
-    data.points.forEach(function(section) {
-      if (section.title && /正常|通过|达标/.test(section.title)) normalCount++;
-      else if (section.title && /预警|风险|待处理/.test(section.title)) warnCount++;
-      else if (section.title && /严重|故障|紧急/.test(section.title)) severeCount++;
-      else warnCount++; // default to warning
-    });
-    sec4 += '<div class="risk-stats">';
-    sec4 += '<div class="risk-stat rs-green"><div class="rs-val">' + normalCount + '</div><div class="rs-label">正常</div></div>';
-    sec4 += '<div class="risk-stat rs-orange"><div class="rs-val">' + warnCount + '</div><div class="rs-label">预警</div></div>';
-    sec4 += '<div class="risk-stat rs-red"><div class="rs-val">' + severeCount + '</div><div class="rs-label">严重</div></div>';
-    sec4 += '</div>';
-    // Risk details as plan-list
-    sec4 += '<ul class="plan-list">';
+    var sec4 = '<div class="section"><div class="section-title"><span>04</span>服务风险管理</div>';
     data.points.forEach(function(section) {
       if (!section.items || !section.items.length) return;
-      sec4 += '<li><span class="plan-tag">' + escapeHtml(section.title) + '</span>';
-      sec4 += '<ul style="margin-top:6px;padding-left:16px">';
+      sec4 += '<div class="sub-title">' + escapeHtml(section.title) + '</div>';
       section.items.forEach(function(item) {
-        sec4 += '<li style="margin-bottom:4px">' + escapeHtml(item) + '</li>';
+        sec4 += '<div class="milestone-item">';
+        sec4 += '<div class="milestone-dot"></div>';
+        sec4 += '<div class="milestone-content"><div class="milestone-desc">' + escapeHtml(item) + '</div></div>';
+        sec4 += '</div>';
       });
-      sec4 += '</ul></li>';
     });
-    sec4 += '</ul>';
     sec4 += '</div>';
     mainContainer.insertAdjacentHTML('beforeend', sec4);
   }
 
   // Section 5: Milestones
   if (data.milestones && data.milestones.length > 0) {
-    var sec5 = '<div class="section"><div class="section-title"><span class="icon">🎯</span> 五、重点里程碑任务进展</div>';
-    sec5 += '<div class="milestone-grid">';
+    var sec5 = '<div class="section"><div class="section-title"><span>05</span>重点里程碑任务进展</div>';
     data.milestones.forEach(function(m) {
-      sec5 += '<div class="milestone-card">';
-      sec5 += '<h4>' + escapeHtml(m.title || m.name || '') + '</h4>';
-      sec5 += '<div class="ms-detail">' + escapeHtml(m.desc || m.description || '') + '</div>';
+      sec5 += '<div class="milestone-item">';
+      sec5 += '<div class="milestone-dot"></div>';
+      sec5 += '<div class="milestone-content">';
+      sec5 += '<div class="milestone-title">' + escapeHtml(m.title || m.name || '') + '</div>';
+      sec5 += '<div class="milestone-desc">' + escapeHtml(m.desc || m.description || '') + '</div>';
       if (m.tags && Array.isArray(m.tags)) {
-        sec5 += '<div style="margin-top:8px">';
+        sec5 += '<div style="margin-top:6px">';
         m.tags.forEach(function(tag) {
-          var tagClass = 'ms-tag ';
-          if (/已上线|完成|已发布/.test(tag)) tagClass += 'ms-tag-done';
-          else if (/研发|开发|设计中/.test(tag)) tagClass += 'ms-tag-dev';
-          else if (/验证|测试/.test(tag)) tagClass += 'ms-tag-test';
-          else if (/评估|评审/.test(tag)) tagClass += 'ms-tag-eval';
-          else tagClass += 'ms-tag-done';
-          sec5 += '<span class="' + tagClass + '">' + escapeHtml(tag) + '</span>';
+          var tagBg = '#d1fae5'; var tagColor = '#065f46';
+          if (/研发|开发|设计中/.test(tag)) { tagBg = '#dbeafe'; tagColor = '#1e40af'; }
+          else if (/验证|测试/.test(tag)) { tagBg = '#fef3c7'; tagColor = '#92400e'; }
+          else if (/评估|评审/.test(tag)) { tagBg = '#e0e7ff'; tagColor = '#4338ca'; }
+          sec5 += '<span style="display:inline-block;padding:1px 8px;border-radius:8px;font-size:11px;margin-right:4px;background:' + tagBg + ';color:' + tagColor + '">' + escapeHtml(tag) + '</span>';
         });
         sec5 += '</div>';
       }
-      sec5 += '</div>';
+      sec5 += '</div></div>';
     });
-    sec5 += '</div></div>';
+    sec5 += '</div>';
     mainContainer.insertAdjacentHTML('beforeend', sec5);
   }
 
-  // Section 6: Work Plan (preserved from original)
+  // Section 6: Work Plan (preserved expand/collapse)
   if (data.workPlan || (data.points && data.points.some(function(p) { return p.title && p.title.includes('计划'); }))) {
     var planText = data.workPlan || '';
     if (!planText) {
       var planSection = data.points.find(function(p) { return p.title && p.title.includes('计划'); });
       if (planSection) planText = planSection.items.join('\n');
     }
-    var sec6 = '<div class="section work-plan"><div class="section-title"><span class="icon">📝</span> 六、工作计划</div>';
-    sec6 += '<ul class="plan-list">';
+    var sec6 = '<div class="section work-plan"><div class="section-title"><span>06</span>下周工作计划</div>';
+    sec6 += '<div class="plan-content">';
     planText.split('\n').forEach(function(line) {
       if (line.trim()) {
-        sec6 += '<li><span class="plan-tag">重点任务</span>' + escapeHtml(line.trim()) + '</li>';
+        sec6 += '<div class="milestone-item"><div class="milestone-dot"></div>';
+        sec6 += '<div class="milestone-content"><div class="milestone-desc">' + escapeHtml(line.trim()) + '</div></div></div>';
       }
     });
-    sec6 += '</ul>';
-    // Keep the expand/collapse functionality
-    sec6 = sec6.replace('<ul class="plan-list">', '<div class="plan-content"><ul class="plan-list">');
-    // Close plan-content after the list
     sec6 += '</div>';
-    sec6 += '<button class="toggle-btn" onclick="this.parentElement.classList.toggle(\'expanded\');this.textContent=this.parentElement.classList.contains(\'expanded\')?\'收起\":\"展开查看更多\"">展开查看更多</button>';
+    sec6 += '<button class="toggle-btn" onclick="this.parentElement.classList.toggle(\'expanded\');this.textContent=this.parentElement.classList.contains(\'expanded\')?\'收起\':\'展开查看更多\'">展开查看更多</button>';
     sec6 += '</div>';
     mainContainer.insertAdjacentHTML('beforeend', sec6);
   }
@@ -2329,7 +2259,7 @@ function renderDashboard(data) {
   // Section 7: Appendix (remaining tables - preserved)
   var appendixTables = (data.tables || []).slice(4);
   if (appendixTables.length > 0) {
-    var sec7 = '<div class="section"><div class="section-title"><span class="icon">📎</span> 附录</div>';
+    var sec7 = '<div class="section"><div class="section-title"><span>附</span>附录数据表</div>';
     appendixTables.forEach(function(table, idx) {
       sec7 += '<div class="appendix-block">';
       sec7 += '<button class="appendix-title" onclick="var w=this.nextElementSibling;w.classList.toggle(\'open\');var icon=this.querySelector(\'.appendix-icon\');if(icon)icon.style.transform=w.classList.contains(\'open\')?\'rotate(90deg)\':\'\';">';
@@ -2491,10 +2421,10 @@ function renderCharts(series, kpis) {
             {
               value: pctKpis.map(function(k) { return k.value; }),
               name: '本期值',
-              areaStyle: { color: 'rgba(59,130,246,0.15)' },
-              lineStyle: { color: '#3b82f6', width: 2 },
-              itemStyle: { color: '#3b82f6', borderWidth: 2, borderColor: '#fff' },
-              label: { show: true, formatter: function(p) { return p.value.toFixed(1) + '%'; }, fontSize: 10, color: '#3b82f6', distance: 4, fontWeight: 'bold' }
+              areaStyle: { color: 'rgba(102,126,234,0.15)' },
+              lineStyle: { color: '#667eea', width: 2 },
+              itemStyle: { color: '#667eea', borderWidth: 2, borderColor: '#fff' },
+              label: { show: true, formatter: function(p) { return p.value.toFixed(1) + '%'; }, fontSize: 10, color: '#667eea', distance: 4, fontWeight: 'bold' }
             },
             {
               value: targets,
@@ -2537,7 +2467,7 @@ function renderCharts(series, kpis) {
         series: [
           {
             name: '本期值', type: 'bar', data: internetSeries.values, barWidth: 30,
-            itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#3b82f6' }, { offset: 1, color: '#6366f1' }]) },
+            itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]) },
             label: { show: true, position: 'top', formatter: '{c}%', fontSize: 12, color: '#333', fontWeight: 'bold' },
             markLine: { silent: true, symbol: 'none', lineStyle: { color: '#ef4444', width: 2, type: 'dashed' },
               label: { show: true, position: 'end', formatter: '目标 ' + targetLine + '%', fontSize: 11, color: '#ef4444', fontWeight: 'bold', backgroundColor: 'rgba(239,68,68,0.1)', padding: [2, 6], borderRadius: 4 },
@@ -2595,7 +2525,7 @@ function renderCharts(series, kpis) {
           series: [{ type: 'pie', radius: ['40%', '65%'], itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
             label: { fontSize: 11, formatter: '{b}\n{c}', color: '#333', lineHeight: 16 },
             data: s.labels.map(function(name, i) { return { value: s.values[i] || 0, name: name }; }),
-            color: ['#006B54', '#008667', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            color: ['#667eea', '#764ba2', '#8b5cf6', '#a78bfa', '#c4b5fd', '#4f46e5']
           }]
         });
       }
@@ -2641,7 +2571,7 @@ function renderCharts(series, kpis) {
           series: [{ type: 'pie', radius: ['40%', '65%'], itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
             label: { fontSize: 11, formatter: '{b}\n{c}', color: '#333', lineHeight: 16 },
             data: s.labels.map(function(name, i) { return { value: s.values[i] || 0, name: name }; }),
-            color: ['#006B54', '#008667', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            color: ['#667eea', '#764ba2', '#8b5cf6', '#a78bfa', '#c4b5fd', '#4f46e5']
           }]
         });
       }
@@ -2702,7 +2632,7 @@ function renderCharts(series, kpis) {
       xAxis: { type: 'category', data: pctKpis.map(function(k) { return k.name.length > 8 ? k.name.substring(0, 8) + '...' : k.name; }), axisLabel: { fontSize: 9, rotate: 30 } },
       yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', fontSize: 10 } },
       series: [{ type: 'bar', data: pctKpis.map(function(k) { return k.value; }), barMaxWidth: 25,
-        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#3b82f6' }, { offset: 1, color: '#6366f1' }]), borderRadius: [4, 4, 0, 0] },
+        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]), borderRadius: [4, 4, 0, 0] },
         label: { show: true, position: 'top', formatter: '{c}%', fontSize: 10 }
       }]
     });
