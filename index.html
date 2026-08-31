@@ -1570,31 +1570,31 @@ function getPatterns(template, text, allTables) {
     // 1. 全渠道业务量占比
     common.kpis.push({
       name: '全渠道业务量占比', unit: '%',
-      regex: new RegExp(sp('全渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('全渠道') + '(?:' + sp('智能客服') + ')?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 2. 电话渠道智能业务量占比
     common.kpis.push({
       name: '电话渠道智能业务量占比', unit: '%',
-      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + sp('客服') + '?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('电话渠道') + '(?:' + sp('智能客服') + ')?' + sp('业务量') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 3. 电话渠道场景流程完成率
     common.kpis.push({
       name: '电话渠道场景流程完成率', unit: '%',
-      regex: new RegExp(sp('电话') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('电话渠道') + '(?:' + sp('智能客服') + ')?' + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 4. 互联网渠道智能服务占比
     common.kpis.push({
       name: '互联网渠道智能服务占比', unit: '%',
-      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('智能') + ')?' + '(?:' + sp('客服') + ')?' + '(?:' + sp('服务') + ')?' + sp('占比') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('互联网渠道') + '(?:' + sp('智能客服') + ')?' + '(?:' + sp('业务量') + ')?' + sp('服务') + sp('占比') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 5. 互联网渠道场景流程完成率
     common.kpis.push({
       name: '互联网渠道场景流程完成率', unit: '%',
-      regex: new RegExp(sp('互联网') + '\\s*' + sp('渠道') + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
+      regex: new RegExp(sp('互联网渠道') + '(?:' + sp('智能客服') + ')?' + '(?:' + sp('场景') + ')?' + sp('流程') + sp('完成率') + '\\s*([\\d.]+)\\s*%'),
       valueFn: m => parseFloat(m[1])
     });
     // 6. 电话渠道服务量
