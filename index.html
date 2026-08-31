@@ -1255,6 +1255,152 @@ async function fetchFromUrl() {
 }
 
 /* ============================================================
+   Extract 95598 Core KPIs directly from PDF table
+   ============================================================ */
+function extract95598CoreKPIs(normText, allTables) {
+  const kpis = [];
+
+  // Strategy: Find each KPI row in the pipe-delimited table text and parse columns directly
+  // Table row format: | N | channel | kpi_name | value% | ↑yoy% | ↓mom% | ≥target% | status | gap% |
+  // After normText + parsePipeRow join: "N channel kpi_name value% ↑yoy% ↓mom% ≥target% status gap%"
+
+  // Helper: find a table row containing the search text, return the full row line
+  function findRow(searchPattern) {
+    const lines = normText.split('\n');
+    for (const line of lines) {
+      const t = line.trim();
+      if (t.startsWith('|') && searchPattern.test(t)) {
+        return t;
+      }
+    }
+    return null;
+  }
+
+  // Helper: parse a pipe row into cells and extract KPI data
+  function parseKPIRow(rowLine, kpiName) {
+    const cells = rowLine.split('|').map(c => c.trim().replace(/\s+/g, '')).filter((c, i, arr) => !(i === 0 && c === '') && !(i === arr.length - 1 && c === ''));
+    // Expected columns: 序号, 服务渠道, 考核指标名称, 本期, 同比, 环比, 年度目标值, 是否达标, 目标差值
+    // But some cells may be merged. Find value%, yoy%, mom%, target% by pattern.
+    const rowText = cells.join(' ');
+
+    // Extract value: first percentage that's not an arrow-prefixed one
+    var value = null, yoy = null, mom = null, target = null;
+    var passed = false;
+
+    // Find all percentage-like values with context
+    // Pattern: number% (the main value), ↑number% (yoy), ↓number% or ↑number% (mom after yoy), ≥number% (target)
+    var valMatch = rowText.match(/([\d.]+)\s*%/);
+    if (valMatch) value = parseFloat(valMatch[1]);
+
+    // Yoy: ↑ or ↓ followed by number%
+    var yoyMatch = rowText.match(/([↑↓])([\d.]+)\s*%/);
+    if (yoyMatch) {
+      yoy = parseFloat(yoyMatch[2]);
+      if (yoyMatch[1] === '↓') yoy = -yoy;
+    }
+
+    // Mom: second ↑ or ↓ followed by number% (after the yoy)
+    var yoyEndIdx = yoyMatch ? rowText.indexOf(yoyMatch[0]) + yoyMatch[0].length : 0;
+    var restText = rowText.substring(yoyEndIdx);
+    var momMatch = restText.match(/([↑↓])([\d.]+)\s*%/);
+    if (momMatch) {
+      mom = parseFloat(momMatch[2]);
+      if (momMatch[1] === '↓') mom = -mom;
+    }
+
+    // Target: ≥number%
+    var tgtMatch = rowText.match(/≥\s*([\d.]+)\s*%/);
+    if (tgtMatch) target = parseFloat(tgtMatch[1]);
+
+    // Passed: check for 达标
+    passed = /达标(?!.*未)/.test(rowText) || (/√/.test(rowText) && !/×/.test(rowText));
+    if (/未达标/.test(rowText)) passed = false;
+
+    if (value !== null) {
+      return { name: kpiName, value: value, unit: '%', mom: mom, yoy: yoy, target: target, targetOp: '>=' };
+    }
+    return null;
+  }
+
+  // KPI 1: 全渠道业务量占比
+  var row1 = findRow(/全渠道业务量占比/);
+  if (row1) { var kpi1 = parseKPIRow(row1, '全渠道业务量占比'); if (kpi1) kpis.push(kpi1); }
+
+  // KPI 2: 电话渠道智能业务量占比 - "电话渠道" + "智能客服业务量占比" may be in same or adjacent cells
+  var row2 = findRow(/电话渠道.*智能客服.*业务量占比|电话.*渠道.*智能.*业务量占比/);
+  if (row2) { var kpi2 = parseKPIRow(row2, '电话渠道智能业务量占比'); if (kpi2) kpis.push(kpi2); }
+
+  // KPI 3: 电话渠道场景流程完成率 - "电话渠道" is in previous row, this row just has "流程完成率"
+  // Find the row with 流程完成率 that comes right after a 电话渠道 row
+  var lines = normText.split('\n');
+  var prevWasDianhua = false;
+  for (var li = 0; li < lines.length; li++) {
+    var lt = lines[li].trim();
+    if (lt.startsWith('|')) {
+      if (/电话\s*渠道/.test(lt)) { prevWasDianhua = true; }
+      else if (prevWasDianhua && /流程完成率/.test(lt)) {
+        var kpi3 = parseKPIRow(lt, '电话渠道场景流程完成率');
+        if (kpi3) kpis.push(kpi3);
+        break;
+      }
+      else { prevWasDianhua = false; }
+    }
+  }
+
+  // KPI 4: 互联网渠道智能服务占比
+  var row4 = findRow(/互联网\s*渠道.*智能客服?.*业务量占比|互联网.*渠道.*智能.*业务量占比/);
+  if (row4) { var kpi4 = parseKPIRow(row4, '互联网渠道智能服务占比'); if (kpi4) kpis.push(kpi4); }
+
+  // KPI 5: 互联网渠道场景流程完成率
+  prevWasDianhua = false;
+  for (var li2 = 0; li2 < lines.length; li2++) {
+    var lt2 = lines[li2].trim();
+    if (lt2.startsWith('|')) {
+      if (/互联网\s*渠道/.test(lt2)) { prevWasDianhua = true; }
+      else if (prevWasDianhua && /流程完成率/.test(lt2)) {
+        var kpi5 = parseKPIRow(lt2, '互联网渠道场景流程完成率');
+        if (kpi5) kpis.push(kpi5);
+        break;
+      }
+      else { prevWasDianhua = false; }
+    }
+  }
+
+  return kpis;
+}
+
+function extractMomFromContext(ctx) {
+  var m = ctx.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/);
+  if (!m) m = ctx.match(/([\d.]+)\s*(?:个百分点|%)\s*(?:的)?环[比节]/);
+  if (m) {
+    var v = parseFloat(m[1]);
+    var isUp = /上升|增长|提高|增加|上涨/.test(ctx);
+    return isUp ? v : -v;
+  }
+  return null;
+}
+
+function extractYoyFromContext(ctx) {
+  var m = ctx.match(/同[比期]\s*(?:上升|增长|提高|增加|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/);
+  if (!m) m = ctx.match(/([\d.]+)\s*(?:个百分点|%).*同[比期]/);
+  if (m) {
+    var v = parseFloat(m[1]);
+    if (/下降|降低|减少/.test(ctx)) v = -v;
+    return v;
+  }
+  return null;
+}
+
+function extractTargetFromContext(ctx) {
+  var m = ctx.match(/[≥>]=?\s*([\d.]+)\s*%/) ||
+          ctx.match(/目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
+          ctx.match(/年度目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
+          ctx.match(/([\d.]+)\s*%.*(?:目标|考核)/);
+  if (m) return parseFloat(m[1]);
+  return null;
+}
+
+/* ============================================================
    Data Extraction Engine
    ============================================================ */
 function extractData(text, template) {
@@ -1271,20 +1417,32 @@ function extractData(text, template) {
   // Normalize text: collapse spaces between Chinese chars for matching, but keep original
   const normText = text.replace(/([一-鿿])\s+([一-鿿])/g, '$1$2');
 
-  // Detect period
-  const periodMatch = normText.match(/第?\s*(\d{1,2})\s*[期周]/) ||
-                      normText.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]/) ||
-                      normText.match(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})\s*[~至到\-—]+\s*(\d{4}[./-])?(\d{1,2})[./-](\d{1,2})/) ||
-                      normText.match(/(\d{1,2}月\d{1,2}日)\s*[~至到\-—]+\s*(\d{1,2}月\d{1,2}日)/);
-  if (periodMatch) data.period = periodMatch[0].trim();
+  // Detect period - try full format first: "2026年第31期（8.14-8.20）"
+  var periodText = '';
+  var periodFullMatch = normText.match(/(\d{4})\s*年\s*第\s*(\d{1,2})\s*期\s*[，,]?\s*([\d.]+\s*[-~至到]+\s*[\d.]+)/);
+  if (periodFullMatch) {
+    periodText = periodFullMatch[1] + '年第' + periodFullMatch[2] + '期（' + periodFullMatch[3] + '）';
+  } else {
+    var periodMatch2 = normText.match(/第\s*(\d{1,2})\s*期\s*[，,]?\s*([\d.]+\s*[-~至到]+\s*[\d.]+)/);
+    if (periodMatch2) {
+      periodText = '第' + periodMatch2[1] + '期（' + periodMatch2[2] + '）';
+    } else {
+      var periodMatch = normText.match(/第?\s*(\d{1,2})\s*[期周]/);
+      if (periodMatch) periodText = periodMatch[0].trim();
+    }
+  }
+  data.period = periodText;
 
-  // Detect title - strip leading number prefix like "1 95598..." -> "95598..."
-  const titleMatch = normText.match(/(?:^|\n)\s*\d+[\s.、]*\s*([\u4e00-\u9fffA-Za-z0-9]{2,30}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/) ||
-                     normText.match(/(.{2,30}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/);
+  // Detect title
+  const titleMatch = normText.match(/(?:^|\n)\s*\d*[\s.、]*\s*([\u4e00-\u9fffA-Za-z0-9]{2,40}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/) ||
+                     normText.match(/(.{2,40}(?:周报|运营报告|工作总结|运营简报|工作简报)[：:：]?\s*(?:第?\s*\d+\s*[期周])?)/);
   if (titleMatch) {
     let title = (titleMatch[1] || titleMatch[0]).trim();
-    // Strip leading digits prefix
     title = title.replace(/^\d+\s*/, '');
+    // Ensure title includes 看板
+    if (!/看板/.test(title) && /周报/.test(title)) {
+      title = title.replace(/周报\s*$/, '周报看板');
+    }
     data.title = title;
   }
 
@@ -1292,70 +1450,65 @@ function extractData(text, template) {
   const allTables = parsePipeTables(normText);
   const pdfTables = parsePdfTables(normText);
 
-  // === Extract KPIs ===
-  const patterns = getPatterns(template, normText, allTables);
+  // === Extract KPIs: First try direct PDF table parsing for 95598 core KPIs ===
+  const coreKPIs = extract95598CoreKPIs(normText, allTables);
+  if (coreKPIs.length > 0) {
+    data.kpis = coreKPIs;
+  } else {
+    // Fallback: use pattern-based extraction
+    const patterns = getPatterns(template, normText, allTables);
+    patterns.kpis.forEach(p => {
+      if (p.fromTable) {
+        const tableData = extractFromTable(allTables, p.fromTable);
+        if (tableData) {
+          data.kpis.push({ name: p.name, value: tableData.value, unit: p.unit || '%', trend: tableData.trend || null,
+            mom: tableData.mom || null, yoy: tableData.yoy || null, target: tableData.target || null, targetOp: tableData.targetOp || '>=' });
+        }
+        return;
+      }
+      if (!p.regex) return;
+      const flags = p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g';
+      const regex = new RegExp(p.regex.source, flags);
+      const matches = normText.matchAll(regex);
+      for (const m of matches) {
+        const name = p.nameFn ? p.nameFn(m) : p.name;
+        let value = p.valueFn ? p.valueFn(m) : parseFloat(m[1]);
+        if (isNaN(value)) continue;
+        const unit = p.unit || '';
+        let trend = null;
+        const trendIdx = normText.indexOf(m[0]);
+        const contextWindow = normText.substring(Math.max(0, trendIdx - 300), trendIdx + m[0].length + 300);
+        const trendMatch = contextWindow.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
+                           contextWindow.match(/([\d.]+)\s*(?:个百分点|%)\s*(?:的)?环[比节]/);
+        if (trendMatch) {
+          const tv = parseFloat(trendMatch[1]);
+          const isUp = /上升|增长|提高|增加|上涨/.test(contextWindow);
+          trend = { value: tv, direction: isUp ? 'up' : 'down' };
+        }
+        var targetVal = null;
+        var targetOp = '>=';
+        var targetMatch = contextWindow.match(/[≥>]=?\s*([\d.]+)\s*%/) ||
+                          contextWindow.match(/目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
+                          contextWindow.match(/(?:考核|要求)[≥>=≤]*\s*([\d.]+)\s*%/) ||
+                          contextWindow.match(/不低于\s*([\d.]+)\s*%/) ||
+                          contextWindow.match(/年度目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
+                          contextWindow.match(/([\d.]+)\s*%.*(?:目标|考核)/);
+        if (targetMatch) { targetVal = parseFloat(targetMatch[1]); }
+        var yoyVal = null;
+        var yoyMatch = contextWindow.match(/同[比期]\s*(?:上升|增长|提高|增加|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
+                       contextWindow.match(/([\d.]+)\s*(?:个百分点|%).*同[比期]/);
+        if (yoyMatch) {
+          yoyVal = parseFloat(yoyMatch[1]);
+          if (/下降|降低|减少/.test(contextWindow)) yoyVal = -yoyVal;
+        }
+        var momVal = null;
+        if (trend) { momVal = trend.value * (trend.direction === 'up' ? 1 : -1); }
+        data.kpis.push({ name: name, value: value, unit: unit, trend: trend, target: targetVal, targetOp: targetOp, mom: momVal, yoy: yoyVal });
+      }
+    });
+  }
 
-  // Extract KPIs from patterns
-  patterns.kpis.forEach(p => {
-    if (p.fromTable) {
-      // KPI from table data
-      const tableData = extractFromTable(allTables, p.fromTable);
-      if (tableData) {
-        data.kpis.push({ name: p.name, value: tableData.value, unit: p.unit || '%', trend: tableData.trend || null });
-      }
-      return;
-    }
-    // skip if no regex (e.g. fromTable-only KPIs that weren't resolved)
-    if (!p.regex) return;
-    // matchAll requires global flag - ensure it's present
-    const flags = p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g';
-    const regex = new RegExp(p.regex.source, flags);
-    const matches = normText.matchAll(regex);
-    for (const m of matches) {
-      const name = p.nameFn ? p.nameFn(m) : p.name;
-      let value = p.valueFn ? p.valueFn(m) : parseFloat(m[1]);
-      if (isNaN(value)) continue;
-      const unit = p.unit || '';
-      // Find trend
-      let trend = null;
-      const trendIdx = normText.indexOf(m[0]);
-      const contextWindow = normText.substring(Math.max(0, trendIdx - 300), trendIdx + m[0].length + 300);
-      // Match "环比下降 X.XX 个百分点" or "环比上升 X.XX%" etc.
-      const trendMatch = contextWindow.match(/环[比节]\s*(?:上升|增长|提高|增加|上涨|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
-                         contextWindow.match(/([\d.]+)\s*(?:个百分点|%)\s*(?:的)?环[比节]/);
-      if (trendMatch) {
-        const tv = parseFloat(trendMatch[1]);
-        const isUp = /上升|增长|提高|增加|上涨/.test(contextWindow);
-        trend = { value: tv, direction: isUp ? 'up' : 'down' };
-      }
-      // Extract target value if present in context
-      var targetVal = null;
-      var targetOp = '>=';
-      var targetMatch = contextWindow.match(/[≥>]=?\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/(?:考核|要求)[≥>=≤]*\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/不低于\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/年度目标[≥>=≤]*\s*([\d.]+)\s*%/) ||
-                        contextWindow.match(/([\d.]+)\s*%.*(?:目标|考核)/);
-      if (targetMatch) { targetVal = parseFloat(targetMatch[1]); }
-      // Extract yoy (同比)
-      var yoyVal = null;
-      var yoyMatch = contextWindow.match(/同[比期]\s*(?:上升|增长|提高|增加|下降|降低|减少)?\s*([\d.]+)\s*(?:个百分点|%)/) ||
-                     contextWindow.match(/([\d.]+)\s*(?:个百分点|%).*同[比期]/);
-      if (yoyMatch) {
-        yoyVal = parseFloat(yoyMatch[1]);
-        if (/下降|降低|减少/.test(contextWindow)) yoyVal = -yoyVal;
-      }
-      // Extract mom (环比) - reuse trend if available
-      var momVal = null;
-      if (trend) {
-        momVal = trend.value * (trend.direction === 'up' ? 1 : -1);
-      }
-      data.kpis.push({ name: name, value: value, unit: unit, trend: trend, target: targetVal, targetOp: targetOp, mom: momVal, yoy: yoyVal });
-    }
-  });
-
-  // Deduplicate KPIs (prefer _isManual items over regex-matched ones)
+  // Deduplicate KPIs
   const seen = new Set();
   data.kpis = data.kpis.filter(k => {
     if (k._isManual) { delete k._isManual; seen.add(k.name); return true; }
@@ -1365,7 +1518,8 @@ function extractData(text, template) {
   });
 
   // Extract series data for charts
-  patterns.series.forEach(s => {
+  const patterns2 = getPatterns(template, normText, allTables);
+  patterns2.series.forEach(s => {
     const match = normText.match(s.regex);
     if (match) {
       data.series[s.name] = {
@@ -1376,7 +1530,7 @@ function extractData(text, template) {
   });
 
   // Extract tables
-  patterns.tables.forEach(t => {
+  patterns2.tables.forEach(t => {
     if (t.fromParsed) {
       // Use pre-parsed pipe tables
       const idx = t.tableIndex || 0;
@@ -1401,7 +1555,7 @@ function extractData(text, template) {
   });
 
   // Extract key points
-  patterns.points.forEach(p => {
+  patterns2.points.forEach(p => {
     const match = normText.match(p.regex);
     if (match) {
       data.points.push({
@@ -2061,10 +2215,18 @@ function renderDashboard(data) {
   var periodText = data.period || '';
   var titleText = data.title || '运营周报看板';
   var subtitleText = data.department || '业务运营部';
+  // Try to extract the report date from text
+  var reportDate = '';
+  var dateMatch = data.rawText ? data.rawText.replace(/([一-鿿])\s+([一-鿿])/g, '$1$2').match(/统计日期[：:]\s*(\d{4}[年./-]\d{1,2}[月./-]\d{1,2}[日号]?)/) : null;
+  if (dateMatch) {
+    reportDate = dateMatch[1];
+  } else {
+    reportDate = new Date().toLocaleDateString('zh-CN');
+  }
   var headerHTML = '<div class="header">' +
     '<h1>' + escapeHtml(titleText) + '</h1>' +
     '<h2>' + escapeHtml(periodText) + '</h2>' +
-    '<p>' + escapeHtml(subtitleText) + ' | 统计日期：' + new Date().toLocaleDateString('zh-CN') + '</p>' +
+    '<p>' + escapeHtml(subtitleText) + ' | 统计日期：' + reportDate + '</p>' +
     '</div>';
   container.insertAdjacentHTML('beforeend', headerHTML);
 
